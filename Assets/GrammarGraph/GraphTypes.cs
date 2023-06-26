@@ -73,6 +73,27 @@ namespace GG.Utils
                 || (type1 == type2);
         }
 
+        public static bool AsteriskEquality(GraphSymbolType type1, GraphSymbolType type2)
+        {
+            bool isAsteriskOne = type1 == GraphSymbolType.Asterisk && 
+                (type2 ==  GraphSymbolType.Asterisk || type2 == GraphSymbolType.NonTerminal || type2 == GraphSymbolType.Terminal);
+            
+            bool isAsteriskTwo = type2 == GraphSymbolType.Asterisk && 
+                (type1 ==  GraphSymbolType.Asterisk || type1 == GraphSymbolType.NonTerminal || type1 == GraphSymbolType.Terminal);
+
+            return isAsteriskOne || isAsteriskTwo;
+        }
+
+        public static bool AreEquivalent(Symbol lSymbol, Symbol rSymbol)
+        {
+            if (lSymbol.Type == GraphSymbolType.Edge || rSymbol.Type == GraphSymbolType.Edge)
+                return lSymbol == rSymbol;
+
+            if (AsteriskEquality(lSymbol.Type, rSymbol.Type)) return true;
+
+            return lSymbol == rSymbol;
+        }
+
         public static string TypeToString(GraphSymbolType type)
         {
             switch (type)

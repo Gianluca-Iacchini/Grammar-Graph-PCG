@@ -12,4 +12,13 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 743aa8bb7118ace49a2fe795a0367d46, type: 3}
   m_Name: FirstGraphLGraphNodes
   m_EditorClassIdentifier: 
-  NodeSaveData: []
+  NodeSaveData:
+  - <ID>k__BackingField: bb274edf-41ed-4102-a9b3-4da1d236cd8a
+    <Symbol>k__BackingField:
+      Name: S
+      Type: 1
+    <Identifier>k__BackingField: 0
+    <GroupID>k__BackingField: 
+    <Position>k__BackingField: {x: 150, y: 200}
+    <IsExactInput>k__BackingField: 0
+    <IsExactOutput>k__BackingField: 0

@@ -12,6 +12,80 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 45f581b988881f64dadf50e64ac358b6, type: 3}
   m_Name: FirstGraph
   m_EditorClassIdentifier: 
-  <Filename>k__BackingField: 
-  <RuleList>k__BackingField: []
-  <SymbolList>k__BackingField: []
+  <Filename>k__BackingField: FirstGraph
+  <RuleList>k__BackingField:
+  - <Name>k__BackingField: Start Rule
+    <LeftGraph>k__BackingField: {fileID: 11400000, guid: 0534da61aa9c6ac49b4740b6eac8b354,
+      type: 2}
+    <RightGraph>k__BackingField: {fileID: 11400000, guid: 6e4b39b9fe72d7647b65b6cc2ddbdb69,
+      type: 2}
+  - <Name>k__BackingField: Grow
+    <LeftGraph>k__BackingField: {fileID: 11400000, guid: 2370d153271b91c42a364afa161220b7,
+      type: 2}
+    <RightGraph>k__BackingField: {fileID: 11400000, guid: 63c1e125c95ce304e9579e3757e9a546,
+      type: 2}
+  - <Name>k__BackingField: Lock goal
+    <LeftGraph>k__BackingField: {fileID: 11400000, guid: 042c852dc244ae440a5e3aa17470a911,
+      type: 2}
+    <RightGraph>k__BackingField: {fileID: 11400000, guid: 49d1b5c2ae2e74945a664f22016c57bf,
+      type: 2}
+  - <Name>k__BackingField: Random task
+    <LeftGraph>k__BackingField: {fileID: 11400000, guid: 85e94158107655047a1e21bd54141169,
+      type: 2}
+    <RightGraph>k__BackingField: {fileID: 11400000, guid: ed6f5419aa7cbf749888fe10c6845c29,
+      type: 2}
+  - <Name>k__BackingField: Unlocks
+    <LeftGraph>k__BackingField: {fileID: 11400000, guid: aa6a51036cd99f447a01619c1c2e3891,
+      type: 2}
+    <RightGraph>k__BackingField: {fileID: 11400000, guid: 22bda10470b913c4b9f60b82b03a2a4a,
+      type: 2}
+  - <Name>k__BackingField: Move Unlocks 1
+    <LeftGraph>k__BackingField: {fileID: 11400000, guid: 2fcc97d16f835234ca9471334a443156,
+      type: 2}
+    <RightGraph>k__BackingField: {fileID: 11400000, guid: 5faffdc0c03beba4383742041febf895,
+      type: 2}
+  - <Name>k__BackingField: Move Unlocks 2
+    <LeftGraph>k__BackingField: {fileID: 11400000, guid: 481ec3825d078d2489c81e7783054c43,
+      type: 2}
+    <RightGraph>k__BackingField: {fileID: 11400000, guid: 37da22762fed79749b99b0dc5d066745,
+      type: 2}
+  - <Name>k__BackingField: Lock doors
+    <LeftGraph>k__BackingField: {fileID: 11400000, guid: b52420ed53e4ce04e8f6963dc32202a0,
+      type: 2}
+    <RightGraph>k__BackingField: {fileID: 11400000, guid: cf1bf14f7a7a15f49909b7f43a7e40f9,
+      type: 2}
+  - <Name>k__BackingField: Move Unlocks 3
+    <LeftGraph>k__BackingField: {fileID: 11400000, guid: ca8512cded75aa94bb8a0c1cf343f36a,
+      type: 2}
+    <RightGraph>k__BackingField: {fileID: 11400000, guid: 09a95b4db84b7f044abe8d60dc53bb2f,
+      type: 2}
+  - <Name>k__BackingField: Move Unlocks 4
+    <LeftGraph>k__BackingField: {fileID: 11400000, guid: e6db5b3b574f7fc419d4f0b1b7750700,
+      type: 2}
+    <RightGraph>k__BackingField: {fileID: 11400000, guid: 81e26451bf3a61b488e301c76f7887e4,
+      type: 2}
+  - <Name>k__BackingField: Unnecessary Locks
+    <LeftGraph>k__BackingField: {fileID: 11400000, guid: 57dd4eeab2f3dca4cbf048ef46fd60b5,
+      type: 2}
+    <RightGraph>k__BackingField: {fileID: 11400000, guid: 85a82f235f832ed4e9c3c535c8ab2248,
+      type: 2}
+  - <Name>k__BackingField: Remove start key
+    <LeftGraph>k__BackingField: {fileID: 11400000, guid: dc05669913862594894ab48d896f5013,
+      type: 2}
+    <RightGraph>k__BackingField: {fileID: 11400000, guid: bb64d2d0ea89e4b4fa7e169a03514836,
+      type: 2}
+  <SymbolList>k__BackingField:
+  - Name: S
+    Type: 1
+  - Name: T
+    Type: 1
+  - Name: t
+    Type: 2
+  - Name: k
+    Type: 2
+  - Name: l
+    Type: 2
+  - Name: start
+    Type: 2
+  - Name: end
+    Type: 2

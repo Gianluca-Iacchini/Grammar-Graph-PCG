@@ -12,4 +12,19 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 885a68921d944b141951e67833e5f891, type: 3}
   m_Name: FirstGraphRGraphEdges
   m_EditorClassIdentifier: 
-  EdgeSaveData: []
+  EdgeSaveData:
+  - <EdgeSymbol>k__BackingField:
+      Name: '*'
+      Type: 0
+    <StartNodeID>k__BackingField: 3f410de7-de86-410f-b985-ea66d197ce32
+    <EndNodeID>k__BackingField: 42071739-c568-4e3b-9498-e6d4660b088d
+  - <EdgeSymbol>k__BackingField:
+      Name: '*'
+      Type: 0
+    <StartNodeID>k__BackingField: 42071739-c568-4e3b-9498-e6d4660b088d
+    <EndNodeID>k__BackingField: 4a4d1a97-daab-4ef8-a9fe-f503d6b9302a
+  - <EdgeSymbol>k__BackingField:
+      Name: '*'
+      Type: 0
+    <StartNodeID>k__BackingField: 4a4d1a97-daab-4ef8-a9fe-f503d6b9302a
+    <EndNodeID>k__BackingField: 1fd02026-55dc-4fde-9c53-f489cafd7a88

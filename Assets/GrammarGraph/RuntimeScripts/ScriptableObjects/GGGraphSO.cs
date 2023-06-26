@@ -19,5 +19,16 @@ namespace GG.ScriptableObjects
             this.Filename = filename;
             this.ID = ID;
         }
+
+        public GGGraphSaveData ToSaveData()
+        {
+            GGGraphSaveData saveData = new GGGraphSaveData();
+            saveData.ID = ID;
+            saveData.Groups = Groups.GroupSaveData;
+            saveData.Nodes = Nodes.NodeSaveData;
+            saveData.Edges = Edges.EdgeSaveData;
+
+            return saveData;
+        }
     }
 }

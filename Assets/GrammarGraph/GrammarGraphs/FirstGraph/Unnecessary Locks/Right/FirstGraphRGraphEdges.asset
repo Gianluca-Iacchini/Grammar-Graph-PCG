@@ -1,0 +1,25 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 885a68921d944b141951e67833e5f891, type: 3}
+  m_Name: FirstGraphRGraphEdges
+  m_EditorClassIdentifier: 
+  EdgeSaveData:
+  - <EdgeSymbol>k__BackingField:
+      Name: key
+      Type: 3
+    <StartNodeID>k__BackingField: b2693dfa-b8a0-4a03-8c74-1a6bd2674161
+    <EndNodeID>k__BackingField: 8cf54c00-a638-45e9-b420-061024056a3a
+  - <EdgeSymbol>k__BackingField:
+      Name: key
+      Type: 3
+    <StartNodeID>k__BackingField: 468551f2-c9fa-4a8b-94d7-5486f4fd561e
+    <EndNodeID>k__BackingField: f30edb8b-9403-476d-8ef5-8a5586242aec
