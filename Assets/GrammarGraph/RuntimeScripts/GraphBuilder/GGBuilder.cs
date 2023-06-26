@@ -9,27 +9,23 @@ namespace GG.Builder
 {
     public class GGBuilder
     {
-        //List<RuleSaveData> SaveDataRules;
-        //Vector2 GridSize;
 
-        public GGBuilder(/*List<RuleSaveData> saveData, Vector2 gridSize*/)
+
+        public GGBuilder()
         {
-            //SaveDataRules = saveData;
-            //GridSize = gridSize;
+
         }
 
-        public static void ApplyRule(int ruleIndex, GGGraph intermediateGraph)
-        {
-            //if (SaveDataRules.Count > ruleIndex) 
-            //{
-            //    ApplyRule(SaveDataRules[ruleIndex], intermediateGraph);
-            //}
-        }
-
+        /// <summary>
+        /// Graph generation main function
+        /// </summary>
+        /// <param name="ruleSaveDataList"></param>
+        /// <param name="MaxNodes"></param>
+        /// <returns></returns>
         public static GGGraph ApplyAllRules(List<RuleSaveData> ruleSaveDataList, int MaxNodes = 10)
         {
 
-
+            
             if (ruleSaveDataList.Count > 0)
             {
                 var startingGraphSaveData = ruleSaveDataList[0].LeftGraph.ToSaveData();
@@ -37,6 +33,8 @@ namespace GG.Builder
 
                 int i = 0;
 
+
+                /// Max iterations is used to prevent infinite loops, the variable is increased at each rule to prevent Non Terminal symbols from remaining in the graph
                 int maxIterations = MaxNodes;
 
                 do
@@ -55,6 +53,7 @@ namespace GG.Builder
 
                 while (i < ruleSaveDataList.Count);
 
+                // Just to keep the graph pretty, we only discard results where any node as more than 4 edges incoming or outgoing, we also discard nodes which have more than 3 main Edges.
                 foreach (var node in startingGraph.Nodes)
                 {
                     if (startingGraph.GetEdgesToNode(node).Count > 4 || startingGraph.GetEdgesFromNode(node).Count > 4
@@ -77,7 +76,7 @@ namespace GG.Builder
 
 
 
-           
+           // Find Subgraph: Step 2
             var results = VF2.FindSubgraphIsomorphisms(ruleGraph, intermediateGraph);
 
             if (results.Count > 0)
@@ -91,7 +90,10 @@ namespace GG.Builder
                     }
                 }
 
+                // Steps 3,4 and 5
                 SubstituteGraph(results.First(), intermediateGraph, resultGraph);
+                
+                // Distance nodes to make a prettier graph
                 SeparateNodes(intermediateGraph);
                 return true;
             }
@@ -100,6 +102,7 @@ namespace GG.Builder
             return false;
         }
 
+        // Used to get random graphs from a rule with a random element to it.
         private static GGGraph GetRandomGroupGraph(List<GGGroup> groups)
         {
             float totalWeight = groups.Sum(x => x.Weight);
@@ -122,8 +125,11 @@ namespace GG.Builder
 
         private static void SubstituteGraph(Dictionary<GGNode, GGNode> patternTargetMapping, GGGraph intermediateGraph, GGGraph resultGraph)
         {
+            // Step 3
             RemovePatternEdges(patternTargetMapping, intermediateGraph);
+            //Step 4
             SubstitueNodes(patternTargetMapping, intermediateGraph, resultGraph);
+            //Step 5 and 6
             ConnectNodesAndRemoveIDs(intermediateGraph, resultGraph);
         }
 
@@ -158,6 +164,7 @@ namespace GG.Builder
             GGNode[] leftNodes = new GGNode[patternTargetMapping.Values.Select(x => x.Identifier >= 0).Count()];
             GGNode[] rightNodes = new GGNode[resultGraph.Nodes.Select(x => x.Identifier >= 0).Count()];
 
+            // Initialize arrays
             foreach (var valueNode in patternTargetMapping.Values)
             {
                 if (valueNode.Identifier < 0) continue;
@@ -180,7 +187,7 @@ namespace GG.Builder
                 }
             }
 
-
+            // Computes position in order to put the new nodes roughly in the same place as the old ones
             Vector2 middlePointTarget = ComputeMiddlePosition(leftNodes.ToList());
             Vector2 middlePointResult = ComputeMiddlePosition(rightNodes.ToList());
                 
@@ -194,6 +201,7 @@ namespace GG.Builder
 
                 newNode.Position = newPos;
 
+                // If the node as same identifier as a node in the left graph, we replace it
                 if (i < leftNodes.Length)
                 {
 
@@ -210,11 +218,13 @@ namespace GG.Builder
                     leftNodes[i].NodeSymbol = newNode.NodeSymbol.Type != Utils.GraphSymbolType.Asterisk? newNode.NodeSymbol : leftNodes[i].NodeSymbol;
                     leftNodes[i].Position = newPos;
                 }
+                // Otherwise we add a new node
                 else
                 {
                     intermediateGraph.AddNode(newNode);
                 }
 
+                // We separate at each iteration to keep things pretty
                 SeparateNodes(intermediateGraph);
                 
             }
@@ -247,69 +257,6 @@ namespace GG.Builder
             return new Vector2(middlePoint.x, middlePoint.y);
         }
 
-
-        private static void PushNode(GGNode nodeToPush, Vector2 newPos, GGGraph intermediateGraph)
-        {
-            Vector2 overlapOffset = Vector2.zero;
-
-
-            foreach (GGNode n in intermediateGraph.Nodes)
-            {
-                if (n.Position.x >= newPos.x - 150 && n.Position.x <= newPos.x + 150)
-                {
-                    if (n.Position.y <= newPos.y + 100 && n.Position.y >= newPos.y - 100)
-                    {
-
-                        float overlapXOffset = MathF.Abs(n.Position.x - newPos.x);
-                        float overlapYOffset = MathF.Abs(n.Position.y - newPos.y);
-                        overlapOffset.x = MathF.Max(overlapOffset.x, overlapXOffset);
-                        overlapOffset.y = MathF.Max(overlapOffset.y, overlapYOffset);
-                    }
-                }
-            }
-
-            if (overlapOffset != Vector2.zero)
-            {
-                if (overlapOffset.x > overlapOffset.y)
-                {
-                    float xOverlapOffset = 200 - overlapOffset.x;
-                    var nodesRight = intermediateGraph.Nodes.Where(x => x.Position.x >= newPos.x);
-                    var nodesLeft = intermediateGraph.Nodes.Where(x => x.Position.x < newPos.x);
-
-                    if (nodesRight.Count() >= nodesLeft.Count())
-                        newPos.x -= xOverlapOffset;
-                    else
-                        newPos.x += xOverlapOffset;
-                }
-                else
-                {
-                    float yOverlapOffset = 250 - overlapOffset.y;
-
-                    var nodesUp = intermediateGraph.Nodes.Where(n => n.Position.y < newPos.y);
-                    var nodesDown = intermediateGraph.Nodes.Where(n => n.Position.y >= newPos.y);
-
-                    if (nodesUp.Count() >= nodesDown.Count())
-                        newPos.y += yOverlapOffset;
-                    else
-                        newPos.y -= yOverlapOffset;
-                }
-
-
-                List<GGNode> nodesToPush = new List<GGNode>();
-                foreach (GGNode n in intermediateGraph.Nodes)
-                {
-                    if (n.Position.x >= newPos.x - 150 && n.Position.x <= newPos.x + 150)
-                    {
-                        if (n.Position.y <= newPos.y + 100 && n.Position.y >= newPos.y - 100)
-                        {
-                            PushNode(n, n.Position, intermediateGraph);
-                        }
-                    }
-                }
-
-            }
-        }
-
         private static Vector2 ComputeNodePosition(GGNode node, Vector2 targetMiddlePoint, Vector2 resultMiddlePoint, GGGraph intermediateGraph)
         {
             Vector2 newPos = targetMiddlePoint;
@@ -320,81 +267,11 @@ namespace GG.Builder
             newPos.x = node.Position.x < resultMiddlePoint.x ? newPos.x - xOffset : newPos.x + xOffset;
             newPos.y = node.Position.y < resultMiddlePoint.y ? newPos.y - yOffset : newPos.y + yOffset;
 
-            //Vector2 overlapOffset = Vector2.positiveInfinity;
-            //bool changed = false;
-
-            //foreach (GGNode n in intermediateGraph.Nodes)
-            //{
-            //    if (n.Position.x >= newPos.x - 150 && n.Position.x <= newPos.x + 150)
-            //    {
-            //        if (n.Position.y <= newPos.y + 200 && n.Position.y >= newPos.y - 200)
-            //        {
-            //            float overlapXOffset = MathF.Abs(n.Position.x - newPos.x);
-            //            float overlapYOffset = MathF.Abs(n.Position.y - newPos.y);
-
-            //            overlapOffset.x = MathF.Min(overlapOffset.x, overlapXOffset);
-            //            overlapOffset.y = MathF.Min(overlapOffset.y, overlapYOffset);
-
-            //            changed = true;
-            //        }
-            //    }
-            //}
-
-            //if (changed)
-            //{
-            //    if (overlapOffset.x > overlapOffset.y)
-            //    {
-            //        float xOverlapOffset = 200 - overlapOffset.x;
-            //        var nodesRight = intermediateGraph.Nodes.Where(x => x.Position.x >= newPos.x);
-            //        var nodesLeft = intermediateGraph.Nodes.Where(x => x.Position.x < newPos.x);
-
-            //        if (nodesRight.Count() >= nodesLeft.Count())
-            //        {
-            //            newPos.x -= xOverlapOffset /2f;
-            //            foreach (GGNode n in nodesLeft)
-            //            {
-            //                n.Position = new Vector2(n.Position.x - xOverlapOffset /2f, n.Position.y);
-            //            }
-            //        }
-            //        else
-            //        {
-            //            newPos.x += xOverlapOffset /2f;
-            //            foreach (GGNode n in nodesRight)
-            //            {
-            //                n.Position = new Vector2(n.Position.x + xOverlapOffset /2f, n.Position.y);
-            //            }
-            //        }
-            //    }
-            //    else
-            //    {
-            //        float yOverlapOffset = 250 - overlapOffset.y;
-
-            //        var nodesUp = intermediateGraph.Nodes.Where(n => n.Position.y < newPos.y);
-            //        var nodesDown = intermediateGraph.Nodes.Where(n => n.Position.y >= newPos.y);
-
-            //        if (nodesUp.Count() >= nodesDown.Count())
-            //        {
-            //            newPos.y += yOverlapOffset / 2f;
-            //            foreach (GGNode n in nodesDown)
-            //            {
-            //                n.Position = new Vector2(n.Position.x, n.Position.y + yOverlapOffset / 2f);
-            //            }
-            //        }
-            //        else
-            //        {
-            //            newPos.y -= yOverlapOffset /2f;
-            //            foreach (GGNode n in nodesUp)
-            //            {
-            //                n.Position = new Vector2(n.Position.x, n.Position.y - yOverlapOffset / 2f);
-            //            }
-            //        }
-            //    }
-
-            //}
 
             return newPos;
         }
 
+        // Pushes nodes away from each other
         private static void SeparateNodes(GGGraph finalGraph)
         {
             int maxIterations = 100;
@@ -432,6 +309,7 @@ namespace GG.Builder
             }
         }
 
+        //Checks wheter two nodes overlap
         private static bool HasOverlaps(GGGraph finalGraph)
         {
             foreach (GGNode n in finalGraph.Nodes)

@@ -61,6 +61,9 @@ namespace GG.Editor
             Initialize(Guid.NewGuid().ToString(), "*", 0 , false);
         }
 
+        /// <summary>
+        /// Initialize node and add all the required ports, buttons and menus
+        /// </summary>
         private void Initialize(string GUID, string grammarSymbol, int ID, bool entryPoint)
         {
 
@@ -103,6 +106,9 @@ namespace GG.Editor
             RefreshExpandedState();
         }
 
+        /// <summary>
+        /// Initialize the symbol dropdown menu
+        /// </summary>
         public void InitializeDropdown(List<Symbol> symbolList)
         {
             
@@ -151,6 +157,7 @@ namespace GG.Editor
 
             return toolbar;
         }
+
 
         public void AddIdentifiers(int nNodes)
         {
@@ -206,6 +213,10 @@ namespace GG.Editor
         }
 
         #region Ports
+        /// <summary>
+        /// Adds a new port based on the symbol and direction specified by the user
+        /// </summary>
+        /// <returns></returns>
         public Port AddPort(string portName, Direction portDirection, Symbol portSymbol = null, bool fromStart = false)
         {
             

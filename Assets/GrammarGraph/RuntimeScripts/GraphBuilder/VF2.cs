@@ -178,10 +178,6 @@ public class VF2State
         }
 
         return true;
-
-        // Check if the nodes are compatible (e.g., same labels)
-        // Implement your compatibility checks here based on your specific requirements
-        // Return true if compatible, false otherwise
     }
 
     /// <summary>
@@ -247,6 +243,13 @@ public class VF2State
         return true;
     }
 
+    /// <summary>
+    /// A target node as at least the same number of total connections as the pattern node (unless pattern is marked as exact)
+    /// For each edge type, the target node has at least the same number of connections as the pattern node (unless pattern is marked as exact)
+    /// </summary>
+    /// <param name="nodePattern"></param>
+    /// <param name="nodeTarget"></param>
+    /// <returns></returns>
     private bool CheckEdgeCount(GGNode nodePattern, GGNode nodeTarget)
     {
         if (nodePattern.IsExactInput || nodePattern.IsExactOutput)
@@ -296,6 +299,10 @@ public class VF2State
         return true;
     }
 
+    /// <summary>
+    /// Checks if the target node has the same number of connections as the pattern node
+    /// </summary>
+    /// <returns></returns>
     private bool ExactEdgeCount(GGNode nodePattern, GGNode nodeTarget)
     {
         var pEdgesIn = PatternGraph.GetEdgesToNode(nodePattern);
@@ -376,6 +383,14 @@ public class VF2State
         return !UnmatchedNodesPattern.Contains(node);
     }
 
+    /// <summary>
+    /// Checks if the edge are the equivalent (same direction, same symbol, same nodes)
+    /// </summary>
+    /// <param name="pNode"></param>
+    /// <param name="tNode"></param>
+    /// <param name="pEdge"></param>
+    /// <param name="tEdge"></param>
+    /// <returns></returns>
     private bool CheckEdge(GGNode pNode, GGNode tNode, GGEdge pEdge, GGEdge tEdge)
     {
         bool sameDirection = false;

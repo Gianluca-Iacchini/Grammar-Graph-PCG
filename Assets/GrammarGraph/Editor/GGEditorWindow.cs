@@ -26,15 +26,19 @@ namespace GG.Editor
 {
     public class GGEditorWindow : GraphViewEditorWindow
     {
+        // List Views
         private ListView m_SymbolListView;
         private ListView m_GraphRuleListView;
 
+        // Graph Views Parents
         private VisualElement m_LGraphParent;
         private VisualElement m_RGraphParent;
 
+        // Split Views
         private TwoPaneSplitView m_LeftPanelSplitView;
         private TwoPaneSplitView m_GraphPanelSplitView;
 
+        // Data lists
         public List<Symbol> Symbols;
         public List<GraphRule> Rules;
 
@@ -45,10 +49,11 @@ namespace GG.Editor
 
         private TextField m_GraphName;
 
+        // Tabs
         private TabButton m_GraphViewResultTab;
         private TabButton m_RulesTab;
 
-        [MenuItem("Graph/Grammar Graph")]
+        [MenuItem("Window/Grammar Graph")]
         public static void OpenGraphGrammarWindow()
         {
             var window = GetWindow<GGEditorWindow>();
@@ -69,6 +74,7 @@ namespace GG.Editor
 
         public void CreateGUI()
         {
+            /// Initializing Toolbar
             Toolbar newToolbar = new Toolbar();
             rootVisualElement.Add(newToolbar);
             var tbutton = new ToolbarButton(()=> { GGSaveGraph saveGraph = new GGSaveGraph(RulesToRuleGraphSaveData(Rules), Symbols); saveGraph.Save(m_GraphName.value); });
@@ -90,9 +96,13 @@ namespace GG.Editor
             vf2Button.text = "Sample rules";
             newToolbar.Add(vf2Button);
 
+            ///
+
+            /// Initializing Data Lists
             Symbols = new List<Symbol>();
             Rules = new List<GraphRule>();
 
+            /// Initializing Split Views
             m_LeftPanelSplitView = new TwoPaneSplitView(0, 125, TwoPaneSplitViewOrientation.Horizontal);
             m_GraphPanelSplitView = new TwoPaneSplitView(0, 250, TwoPaneSplitViewOrientation.Horizontal);
 
@@ -127,13 +137,16 @@ namespace GG.Editor
 
             VisualElement leftPanel = ConstructLeftPanel();
             m_LeftPanelSplitView.Add(leftPanel);
-            //m_LeftPanelSplitView.Add(m_GraphPanelSplitView);
             m_LeftPanelSplitView.Add(m_GraphTabbedView);
             rootVisualElement.Add(m_LeftPanelSplitView);
 
-
+            ///
         }
 
+        /// <summary>
+        ///  Converts to RuleGraphSaveData used by GGSaveGraph
+        /// </summary>
+        /// <returns></returns>
         private List<RuleGraphSaveData> RulesToRuleGraphSaveData(List<GraphRule> rules)
         {
             List<RuleGraphSaveData> ruleGraphSaveDatas = new List<RuleGraphSaveData>();
@@ -151,6 +164,9 @@ namespace GG.Editor
             return ruleGraphSaveDatas;
         }
 
+        /// <summary>
+        /// Graph Loader function
+        /// </summary>
         private void LoadGraph()
         {
             GGSaveGraph saveGraph = new GGSaveGraph(RulesToRuleGraphSaveData(Rules), Symbols);
@@ -198,6 +214,9 @@ namespace GG.Editor
             }
         }
 
+        /// <summary>
+        /// Creates sample graph
+        /// </summary>
         private void VF2Test()
         {
             foreach (GraphRule r in Rules)
@@ -274,6 +293,7 @@ namespace GG.Editor
             m_GraphTabbedView.Activate(m_GraphViewResultTab);
         }
 
+        // Helper function to create a new Graph View
         private GGGraphView ConstructGraphView()
         {
             GGGraphView graphView = new GGGraphView
@@ -288,6 +308,7 @@ namespace GG.Editor
             return graphView;
         }
 
+        // Rename rule on double click
         private string RenameRule(string newName)
         {
             int counter = 0;
@@ -302,6 +323,7 @@ namespace GG.Editor
             return modifiedString;
         }
 
+        // Rename symbol, if symbol with same name exists, add counter to the end
         private string RenameSymbol(string newName)
         {
 
@@ -338,6 +360,7 @@ namespace GG.Editor
             return newString + counter.ToString();
         }
 
+        // Construct listview used to disply symbols
         private ListView ConstructSymbolListView()
         {
             ListView listView = new ListView();
@@ -411,6 +434,7 @@ namespace GG.Editor
             return listView;
         }
 
+        // Get index of symbol type, used to correctly display symbols in nodes
         private int GetIndexOfSymbolType(GraphSymbolType type, int absoluteIndex)
         {
             int symbolIndex = 0;
@@ -425,6 +449,10 @@ namespace GG.Editor
             return symbolIndex;
         }
 
+        /// <summary>
+        /// Constructs Rule list view
+        /// </summary>
+        /// <returns></returns>
         private ListView ConstructRuleListView()
         {
             ListView listView = new ListView();
@@ -467,6 +495,9 @@ namespace GG.Editor
             return listView;
         }
 
+        /// <summary>
+        /// Shows correct graph view on selection
+        /// </summary>
         private void ChangeGraphViews(GraphRule graphRule)
         {
             if (m_LGraphParent.childCount > 0 && m_RGraphParent.childCount > 0)
@@ -483,6 +514,10 @@ namespace GG.Editor
             }
         }
 
+        /// <summary>
+        /// Constructs tabbed view for result graph and rules graph
+        /// </summary>
+        /// <returns></returns>
         private TabbedView ConstructGraphTabView()
         {
             var tabbedView = new TabbedView();
@@ -497,6 +532,10 @@ namespace GG.Editor
             return tabbedView;
         }
 
+        /// <summary>
+        /// Constructs tabbed view for symbol list and rules list
+        /// </summary>
+        /// <returns></returns>
         private TabbedView ConstructListviewTabview()
         {
             var tabbedView = new TabbedView();
@@ -534,6 +573,9 @@ namespace GG.Editor
             return tabbedView;
         }
 
+        /// <summary>
+        /// Adds a new symbol to the list
+        /// </summary>
         private void SymbolAddAction(Symbol symbol)
         {
             Symbols.Add(symbol);
@@ -569,7 +611,10 @@ namespace GG.Editor
             SymbolAddAction(s);
         }
     
-
+        /// <summary>
+        /// Creates symbol / rule toolbar
+        /// </summary>
+        /// <returns></returns>
         private Toolbar ConstructToolbar()
         {
             var toolbar = new Toolbar();
@@ -599,7 +644,9 @@ namespace GG.Editor
     }
 
     
-
+    /// <summary>
+    /// Listview item for Rule listview
+    /// </summary>
     class GraphRuleItem : VisualElement
     {
         public string RuleName;
@@ -694,6 +741,9 @@ namespace GG.Editor
         }
     }
 
+    /// <summary>
+    ///  ListView item for Symbol listview
+    /// </summary>
     class SymbolItem : VisualElement
     {
         public delegate string NameChange(int index, string oldName, string newName);

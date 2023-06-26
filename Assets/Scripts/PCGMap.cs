@@ -48,7 +48,9 @@ namespace PCG
 
         private List<Room> RoomList;
 
-        
+
+        private bool m_ShowKeyLines = false;
+        private bool m_ShowNodeLines = true;
 
         // Start is called before the first frame update
 
@@ -76,22 +78,26 @@ namespace PCG
                 {
                     isGenerating = true;
                     StartCoroutine(roomGeneratorRoutine());
+                    m_ShowNodeLines = true;
+                    m_ShowKeyLines = false;
                 }
             }
             if (Input.GetKeyDown(KeyCode.K))
             {
+                m_ShowKeyLines = !m_ShowKeyLines;
                 foreach (var r in RoomList)
                 {
-                    foreach (var e in m_Graph.GetEdgesFromNode(r.RoomNode))
-                    {
-                        if (e.EdgeSymbol.Type == GraphSymbolType.Edge)
-                        {
-                            r.AddConnection(RoomList.Find(x => x.RoomNode == e.EndNode), Color.green);
-                            
-                        }
-                    }
+                    r.ToggleKeyLines(m_ShowKeyLines);
                 }
+            }
 
+            if (Input.GetKeyDown(KeyCode.M))
+            {
+                m_ShowNodeLines = !m_ShowNodeLines;
+                foreach (var r in RoomList)
+                {
+                    r.ToggleNodeLines(m_ShowNodeLines);
+                }
             }
         }
 
@@ -138,12 +144,18 @@ namespace PCG
 
                 foreach (GGEdge e in graph.GetEdgesFromNode(r.RoomNode))
                 {
-                    if (e.EdgeSymbol.Type == GraphSymbolType.Edge) continue;
+                    if (e.EdgeSymbol.Type == GraphSymbolType.Edge)
+                    {
+                        var keyNode = RoomList.Find(x => x.RoomNode == e.EndNode);
+                        r.AddConnection(keyNode.GetComponent<Room>(), Color.green);
+
+                        continue;
+                    }
 
                     var toNode = RoomList.Find(x => x.RoomNode == e.EndNode);
                     r.AddConnection(toNode.GetComponent<Room>(), Color.white);
                 }
-
+                r.ToggleKeyLines(false);
             }
         }
 

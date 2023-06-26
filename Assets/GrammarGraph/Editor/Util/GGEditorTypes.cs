@@ -3,8 +3,12 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
+
 namespace GG.Editor.Utils
 {
+    /// <summary>
+    /// Class using Editor types which cannot be referenced in runtime
+    /// </summary>
     public struct GraphRule
     {
         public string ruleName;

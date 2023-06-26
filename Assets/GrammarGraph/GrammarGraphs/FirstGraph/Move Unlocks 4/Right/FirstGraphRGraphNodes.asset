@@ -13,13 +13,22 @@ MonoBehaviour:
   m_Name: FirstGraphRGraphNodes
   m_EditorClassIdentifier: 
   NodeSaveData:
+  - <ID>k__BackingField: d7fd282b-ccec-41e8-b147-c0a088d1243e
+    <Symbol>k__BackingField:
+      Name: l
+      Type: 2
+    <Identifier>k__BackingField: 1
+    <GroupID>k__BackingField: 
+    <Position>k__BackingField: {x: 351.3333, y: 0}
+    <IsExactInput>k__BackingField: 0
+    <IsExactOutput>k__BackingField: 0
   - <ID>k__BackingField: bebd76d3-623c-4fd7-8191-a039c6e20644
     <Symbol>k__BackingField:
       Name: '*'
       Type: 0
     <Identifier>k__BackingField: 2
     <GroupID>k__BackingField: 
-    <Position>k__BackingField: {x: 271.99994, y: 163.33333}
+    <Position>k__BackingField: {x: -116, y: 0}
     <IsExactInput>k__BackingField: 0
     <IsExactOutput>k__BackingField: 0
   - <ID>k__BackingField: f3abb03f-8001-4367-81fe-c040e3918d7d
@@ -28,15 +37,6 @@ MonoBehaviour:
       Type: 2
     <Identifier>k__BackingField: 0
     <GroupID>k__BackingField: 
-    <Position>k__BackingField: {x: 443.3333, y: 331.33334}
-    <IsExactInput>k__BackingField: 0
-    <IsExactOutput>k__BackingField: 0
-  - <ID>k__BackingField: d7fd282b-ccec-41e8-b147-c0a088d1243e
-    <Symbol>k__BackingField:
-      Name: l
-      Type: 2
-    <Identifier>k__BackingField: 1
-    <GroupID>k__BackingField: 
-    <Position>k__BackingField: {x: 443.3333, y: -38.666664}
+    <Position>k__BackingField: {x: 129.33331, y: 0}
     <IsExactInput>k__BackingField: 0
     <IsExactOutput>k__BackingField: 0

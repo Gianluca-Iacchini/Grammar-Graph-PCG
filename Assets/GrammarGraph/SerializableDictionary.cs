@@ -11,6 +11,9 @@ public class SerializableDictionary
 {
 }
 
+/// <summary>
+/// Helper class used for serializing and deserializing Graph Data
+/// </summary>
 [Serializable]
 public class SerializableDictionary<TKey, TValue> : SerializableDictionary, IDictionary<TKey, TValue>, ISerializationCallbackReceiver
 {

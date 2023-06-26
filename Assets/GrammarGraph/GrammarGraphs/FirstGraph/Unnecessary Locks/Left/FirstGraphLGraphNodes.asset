@@ -13,31 +13,13 @@ MonoBehaviour:
   m_Name: FirstGraphLGraphNodes
   m_EditorClassIdentifier: 
   NodeSaveData:
-  - <ID>k__BackingField: 079ee0e0-8765-4dd4-91a1-4f23231e90f2
-    <Symbol>k__BackingField:
-      Name: l
-      Type: 2
-    <Identifier>k__BackingField: 2
-    <GroupID>k__BackingField: 
-    <Position>k__BackingField: {x: 211.33331, y: 133.33333}
-    <IsExactInput>k__BackingField: 0
-    <IsExactOutput>k__BackingField: 0
   - <ID>k__BackingField: 10c06ca0-fbc9-49f3-826d-10b20034a782
     <Symbol>k__BackingField:
       Name: l
       Type: 2
     <Identifier>k__BackingField: 1
     <GroupID>k__BackingField: 
-    <Position>k__BackingField: {x: 211.33331, y: -171.33334}
-    <IsExactInput>k__BackingField: 0
-    <IsExactOutput>k__BackingField: 0
-  - <ID>k__BackingField: 8842f34a-de35-405d-8e16-c8ecc4953fcc
-    <Symbol>k__BackingField:
-      Name: k
-      Type: 2
-    <Identifier>k__BackingField: 3
-    <GroupID>k__BackingField: 
-    <Position>k__BackingField: {x: -34.66667, y: -171.33334}
+    <Position>k__BackingField: {x: 261.33334, y: -28}
     <IsExactInput>k__BackingField: 0
     <IsExactOutput>k__BackingField: 0
   - <ID>k__BackingField: 88c325e4-d7e1-46cb-8baa-9da70d9f04fd
@@ -46,6 +28,24 @@ MonoBehaviour:
       Type: 2
     <Identifier>k__BackingField: 0
     <GroupID>k__BackingField: 
-    <Position>k__BackingField: {x: -34.66667, y: 133.33333}
+    <Position>k__BackingField: {x: -32.000015, y: 226.66666}
+    <IsExactInput>k__BackingField: 0
+    <IsExactOutput>k__BackingField: 0
+  - <ID>k__BackingField: 8842f34a-de35-405d-8e16-c8ecc4953fcc
+    <Symbol>k__BackingField:
+      Name: k
+      Type: 2
+    <Identifier>k__BackingField: 3
+    <GroupID>k__BackingField: 
+    <Position>k__BackingField: {x: -32.000015, y: -28}
+    <IsExactInput>k__BackingField: 0
+    <IsExactOutput>k__BackingField: 0
+  - <ID>k__BackingField: 079ee0e0-8765-4dd4-91a1-4f23231e90f2
+    <Symbol>k__BackingField:
+      Name: l
+      Type: 2
+    <Identifier>k__BackingField: 2
+    <GroupID>k__BackingField: 
+    <Position>k__BackingField: {x: 261.33334, y: 226.66666}
     <IsExactInput>k__BackingField: 0
     <IsExactOutput>k__BackingField: 0

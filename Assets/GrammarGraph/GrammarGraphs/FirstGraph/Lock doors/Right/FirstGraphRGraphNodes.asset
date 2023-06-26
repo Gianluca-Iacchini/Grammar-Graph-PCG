@@ -19,16 +19,7 @@ MonoBehaviour:
       Type: 0
     <Identifier>k__BackingField: 2
     <GroupID>k__BackingField: 
-    <Position>k__BackingField: {x: 105.33331, y: 284.66666}
-    <IsExactInput>k__BackingField: 0
-    <IsExactOutput>k__BackingField: 0
-  - <ID>k__BackingField: 1a21f88a-9444-4887-b32f-55d4f72f79c6
-    <Symbol>k__BackingField:
-      Name: '*'
-      Type: 0
-    <Identifier>k__BackingField: 1
-    <GroupID>k__BackingField: 
-    <Position>k__BackingField: {x: 281.99994, y: 96}
+    <Position>k__BackingField: {x: 0, y: 0}
     <IsExactInput>k__BackingField: 0
     <IsExactOutput>k__BackingField: 0
   - <ID>k__BackingField: 926623ad-f9cf-4b36-bfe7-ab4f0b53c249
@@ -37,6 +28,15 @@ MonoBehaviour:
       Type: 2
     <Identifier>k__BackingField: 0
     <GroupID>k__BackingField: 
-    <Position>k__BackingField: {x: 455.3333, y: 284.66666}
+    <Position>k__BackingField: {x: 354.6667, y: 0}
+    <IsExactInput>k__BackingField: 0
+    <IsExactOutput>k__BackingField: 0
+  - <ID>k__BackingField: 1a21f88a-9444-4887-b32f-55d4f72f79c6
+    <Symbol>k__BackingField:
+      Name: '*'
+      Type: 0
+    <Identifier>k__BackingField: 1
+    <GroupID>k__BackingField: 
+    <Position>k__BackingField: {x: 179.99994, y: -160.66666}
     <IsExactInput>k__BackingField: 0
     <IsExactOutput>k__BackingField: 0

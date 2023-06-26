@@ -18,32 +18,41 @@ public class Room : MonoBehaviour
 
     private int freePathways = 0;
 
+    public List<LineRenderer> nodeLines = new List<LineRenderer>();
+    public List<LineRenderer> keyLines = new List<LineRenderer>();
+
     public void AddConnection(Room room, Color color)
     {
-
 
         var lineRenderer = Instantiate(lineRendererPrefab, transform);
         lineRenderer.SetPosition(0, transform.position + Vector3.up * 0.2f);
         lineRenderer.SetPosition(1, room.transform.position + Vector3.up * 0.2f);
         lineRenderer.startColor = color;
         lineRenderer.endColor = color;
+
+        if (color == Color.white)
+        { 
+            nodeLines.Add(lineRenderer);
+        }
+        else
+        {
+            keyLines.Add(lineRenderer);
+        }
     }
 
-    public Vector2Int GetEntrance(int CorridorThickness)
+    public void ToggleNodeLines(bool toggle)
     {
-        int i = (this.CellCoord.I + 1) * CorridorThickness; 
-        int j = (this.CellCoord.J + 1) * CorridorThickness;
-
-        int offset = Mathf.FloorToInt(CorridorThickness / 2f);
-
-        return new Vector2Int(i, j);
+        foreach (var l in nodeLines)
+        {
+            l.gameObject.SetActive(toggle);
+        }
     }
 
-    public Vector2Int GetExit(int CorridorThickness)
+    public void ToggleKeyLines(bool toggle)
     {
-        int i = (this.CellCoord.I + 1) * CorridorThickness;
-        int j = (this.CellCoord.J + 1) * CorridorThickness;
-
-        return new Vector2Int(i, j);
+        foreach (var l in keyLines)
+        {
+            l.gameObject.SetActive(toggle);
+        }
     }
 }

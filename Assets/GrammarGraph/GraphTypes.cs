@@ -4,8 +4,12 @@ using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UIElements;
 
+
 namespace GG.Utils
 {
+    /// <summary>
+    /// Helper class used to hold Graph Types and useful functions
+    /// </summary>
     [Serializable]
     public class Symbol
     {
@@ -66,6 +70,10 @@ namespace GG.Utils
             return !(s1 == s2);
         }
 
+        /// <summary>
+        /// Checks if both symbols are either of type Terminal or NonTerminal
+        /// </summary>
+        /// <returns></returns>
         public static bool TerminalNonTerminalEquality(GraphSymbolType type1, GraphSymbolType type2)
         {
             return ((type1 == GraphSymbolType.Terminal || type1 == GraphSymbolType.NonTerminal) &&
@@ -73,6 +81,10 @@ namespace GG.Utils
                 || (type1 == type2);
         }
 
+        /// <summary>
+        /// Returns true if any of the symbols is an asterisk or thley are of the same non-edge type
+        /// </summary>
+        /// <returns></returns>
         public static bool AsteriskEquality(GraphSymbolType type1, GraphSymbolType type2)
         {
             bool isAsteriskOne = type1 == GraphSymbolType.Asterisk && 
@@ -84,6 +96,10 @@ namespace GG.Utils
             return isAsteriskOne || isAsteriskTwo;
         }
 
+        /// <summary>
+        /// Checks if symbols are matchable
+        /// </summary>
+        /// <returns></returns>
         public static bool AreEquivalent(Symbol lSymbol, Symbol rSymbol)
         {
             if (lSymbol.Type == GraphSymbolType.Edge || rSymbol.Type == GraphSymbolType.Edge)

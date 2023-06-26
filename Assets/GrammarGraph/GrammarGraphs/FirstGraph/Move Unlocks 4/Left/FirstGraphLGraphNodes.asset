@@ -19,7 +19,7 @@ MonoBehaviour:
       Type: 2
     <Identifier>k__BackingField: 1
     <GroupID>k__BackingField: 
-    <Position>k__BackingField: {x: 191.33331, y: 112.66667}
+    <Position>k__BackingField: {x: 0, y: 0}
     <IsExactInput>k__BackingField: 0
     <IsExactOutput>k__BackingField: 0
   - <ID>k__BackingField: 9d478075-565d-4d41-9494-47876ff07ef4
@@ -28,7 +28,7 @@ MonoBehaviour:
       Type: 0
     <Identifier>k__BackingField: 2
     <GroupID>k__BackingField: 
-    <Position>k__BackingField: {x: -36.66667, y: 112.66667}
+    <Position>k__BackingField: {x: -208.66669, y: 0}
     <IsExactInput>k__BackingField: 0
     <IsExactOutput>k__BackingField: 0
   - <ID>k__BackingField: 38c15f7f-162d-4d48-9d18-12c3103dc99a
@@ -37,6 +37,6 @@ MonoBehaviour:
       Type: 2
     <Identifier>k__BackingField: 0
     <GroupID>k__BackingField: 
-    <Position>k__BackingField: {x: 486.66666, y: 112.66667}
+    <Position>k__BackingField: {x: 287.99997, y: 0}
     <IsExactInput>k__BackingField: 0
     <IsExactOutput>k__BackingField: 0

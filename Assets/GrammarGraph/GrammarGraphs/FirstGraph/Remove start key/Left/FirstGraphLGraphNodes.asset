@@ -19,16 +19,7 @@ MonoBehaviour:
       Type: 2
     <Identifier>k__BackingField: 0
     <GroupID>k__BackingField: 
-    <Position>k__BackingField: {x: 88.66666, y: 272.66666}
-    <IsExactInput>k__BackingField: 0
-    <IsExactOutput>k__BackingField: 0
-  - <ID>k__BackingField: 1b5fb414-6208-4fed-8353-ace643357e4d
-    <Symbol>k__BackingField:
-      Name: l
-      Type: 2
-    <Identifier>k__BackingField: 1
-    <GroupID>k__BackingField: 
-    <Position>k__BackingField: {x: 351.33334, y: 357.33334}
+    <Position>k__BackingField: {x: 0, y: 0}
     <IsExactInput>k__BackingField: 0
     <IsExactOutput>k__BackingField: 0
   - <ID>k__BackingField: 02628d70-0a4b-4cd1-98db-57f41af1f8f5
@@ -37,6 +28,15 @@ MonoBehaviour:
       Type: 2
     <Identifier>k__BackingField: 2
     <GroupID>k__BackingField: 
-    <Position>k__BackingField: {x: 371.33334, y: 142.66667}
+    <Position>k__BackingField: {x: 271.33334, y: -92}
+    <IsExactInput>k__BackingField: 0
+    <IsExactOutput>k__BackingField: 0
+  - <ID>k__BackingField: 1b5fb414-6208-4fed-8353-ace643357e4d
+    <Symbol>k__BackingField:
+      Name: l
+      Type: 2
+    <Identifier>k__BackingField: 1
+    <GroupID>k__BackingField: 
+    <Position>k__BackingField: {x: 251.33334, y: 98.66667}
     <IsExactInput>k__BackingField: 0
     <IsExactOutput>k__BackingField: 0

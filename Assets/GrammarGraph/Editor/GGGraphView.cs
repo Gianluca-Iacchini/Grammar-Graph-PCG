@@ -16,6 +16,9 @@ using GG.ScriptableObjects;
 
 namespace GG.Editor {
 
+    /// <summary>
+    /// GraphView used to display and edit a Grammar Rule
+    /// </summary>
     public class GGGraphView : GraphView
     {
         private List<GGGroupEditor> m_GroupList;
@@ -45,6 +48,10 @@ namespace GG.Editor {
             graphViewChanged += OnGraphViewChange;
         }
 
+        /// <summary>
+        /// Handle deletion of nodes and keeps track of identifiers
+        /// </summary>
+        /// <returns></returns>
         private GraphViewChange OnGraphViewChange(GraphViewChange gvc)
         {
             if (gvc.elementsToRemove != null)
@@ -66,6 +73,10 @@ namespace GG.Editor {
             return gvc;
         }
 
+        /// <summary>
+        /// Returns node save data for saving the rule
+        /// </summary>
+        /// <returns></returns>
         public List<GGNodeSaveData> GetNodeData()
         {
             List<GGNodeSaveData> m_NodeList = new List<GGNodeSaveData>();
@@ -96,6 +107,10 @@ namespace GG.Editor {
             return m_NodeList;
         }
 
+        /// <summary>
+        /// Returns group save data for saving the rule
+        /// </summary>
+        /// <returns></returns>
         public List<GGGroupSaveData> GetGroupData()
         {
             List<GGGroupSaveData> GroupSaveDataList = new List<GGGroupSaveData>();
@@ -115,6 +130,10 @@ namespace GG.Editor {
             return GroupSaveDataList;
         }
 
+        /// <summary>
+        /// Returns edge save data for saving the rule
+        /// </summary>
+        /// <returns></returns>
         public List<GGEdgeSaveData> GetEdgeSaveData()
         {
             List<GGEdgeSaveData> EdgeSaveDataList = new List<GGEdgeSaveData>();
@@ -148,6 +167,10 @@ namespace GG.Editor {
             return EdgeSaveDataList;
         }
 
+        /// <summary>
+        /// Returns the graph save data for saving the rule
+        /// </summary>
+        /// <returns></returns>
         public GGGraphSaveData GetGraphSaveData()
         {
             GGGraphSaveData graphSaveData = new GGGraphSaveData
@@ -161,6 +184,10 @@ namespace GG.Editor {
             return graphSaveData;
         }
 
+        /// <summary>
+        /// Creates a new Group and adds a node to it if selected
+        /// </summary>
+        /// <returns></returns>
         private GGGroupEditor CreateGroup(string title, Vector2 localMousePos)
         {
             GGGroupEditor group = new GGGroupEditor();
@@ -182,6 +209,7 @@ namespace GG.Editor {
             return group;
         }
 
+
         private bool IsCompatible(Port startPort, Port endPort)
         {
             var userDataStart = startPort.userData as Symbol;
@@ -202,6 +230,10 @@ namespace GG.Editor {
             return false;
         }
 
+        /// <summary>
+        /// States which Ports are compatible with each other
+        /// </summary>
+        /// <returns></returns>
         public override List<Port> GetCompatiblePorts(Port startPort, NodeAdapter nodeAdapter)
         {
             var compatiblePorts = new List<Port>();
@@ -230,6 +262,7 @@ namespace GG.Editor {
                 }
             });
         }
+
 
         private GGNodeEditor CreateGraphGrammarNode(string nodeName, Vector2 pos)
         {
@@ -317,6 +350,11 @@ namespace GG.Editor {
             graphElements.ForEach(x => { x.Clear(); RemoveElement(x); });
         }
 
+
+        /// <summary>
+        /// Initializes graphview from saved data
+        /// </summary>
+        /// <param name="saveData"></param>
         public void CreateFromSaveData(GGGraphSaveData saveData)
         {
             this.ID = saveData.ID;

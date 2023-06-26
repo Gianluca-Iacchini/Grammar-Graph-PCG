@@ -4,6 +4,9 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
+/// <summary>
+/// Data class used to represent edges in the graph
+/// </summary>
 public class GGEdge
 {
     public GGNode StartNode { get; private set; }
