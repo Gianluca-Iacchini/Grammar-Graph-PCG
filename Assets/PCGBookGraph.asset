@@ -1,0 +1,100 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 45f581b988881f64dadf50e64ac358b6, type: 3}
+  m_Name: PCGBookGraph
+  m_EditorClassIdentifier: 
+  <Filename>k__BackingField: PCGBookGraph
+  <RuleList>k__BackingField:
+  - <Name>k__BackingField: Start
+    <LeftGraph>k__BackingField: {fileID: 11400000, guid: 76155a749be7df8419eee2e767c576fc,
+      type: 2}
+    <RightGraph>k__BackingField: {fileID: 11400000, guid: 7340d721b5e245f41886c828728b8255,
+      type: 2}
+  - <Name>k__BackingField: Grow
+    <LeftGraph>k__BackingField: {fileID: 11400000, guid: 80b7161c10dd828429944cd7181e7bb2,
+      type: 2}
+    <RightGraph>k__BackingField: {fileID: 11400000, guid: 35894ea8a43b6d440b1a6f38976d60eb,
+      type: 2}
+  - <Name>k__BackingField: Lock Goal
+    <LeftGraph>k__BackingField: {fileID: 11400000, guid: 2131252242263ab4eb0b3c2e3d532212,
+      type: 2}
+    <RightGraph>k__BackingField: {fileID: 11400000, guid: b00e53b661288c1409faef857a5e3043,
+      type: 2}
+  - <Name>k__BackingField: Random Task
+    <LeftGraph>k__BackingField: {fileID: 11400000, guid: e4d2ae4cd69e97449920ce9a43be2e55,
+      type: 2}
+    <RightGraph>k__BackingField: {fileID: 11400000, guid: f8ef4a8378ea8f24f9e3df7db3bbe5e7,
+      type: 2}
+  - <Name>k__BackingField: Unlocks
+    <LeftGraph>k__BackingField: {fileID: 11400000, guid: 3365e306f376408419527188e99e7bb6,
+      type: 2}
+    <RightGraph>k__BackingField: {fileID: 11400000, guid: 621f6f7e60f6cd744b9c7f5127580f4f,
+      type: 2}
+  - <Name>k__BackingField: Move Unlocks 1
+    <LeftGraph>k__BackingField: {fileID: 11400000, guid: 18d370c2dc7037f48be020b9f1434e64,
+      type: 2}
+    <RightGraph>k__BackingField: {fileID: 11400000, guid: a179914c92696b440bd9836be3616aa6,
+      type: 2}
+  - <Name>k__BackingField: Move Unlocks 2
+    <LeftGraph>k__BackingField: {fileID: 11400000, guid: b9ef1ed415253534eb5597a7ff4a427e,
+      type: 2}
+    <RightGraph>k__BackingField: {fileID: 11400000, guid: a954d0303286fc142bd40442220cd68b,
+      type: 2}
+  - <Name>k__BackingField: Lock Doors
+    <LeftGraph>k__BackingField: {fileID: 11400000, guid: 641968465af3b0a498fe0be855e93694,
+      type: 2}
+    <RightGraph>k__BackingField: {fileID: 11400000, guid: 13105ea0863e20e4783d119825111f89,
+      type: 2}
+  - <Name>k__BackingField: Move Unlocks 3
+    <LeftGraph>k__BackingField: {fileID: 11400000, guid: c1c1d6d557b631f4c84d6a82128c0caa,
+      type: 2}
+    <RightGraph>k__BackingField: {fileID: 11400000, guid: 9878cb0d69b5dc34d82274fb167fd7d6,
+      type: 2}
+  - <Name>k__BackingField: Move Unlocks 4
+    <LeftGraph>k__BackingField: {fileID: 11400000, guid: 4fc4fc7f1b888ca41ac07d7c6ccd225d,
+      type: 2}
+    <RightGraph>k__BackingField: {fileID: 11400000, guid: 2faf917947d15fc48b3f565296d89f0a,
+      type: 2}
+  - <Name>k__BackingField: Remove Locks
+    <LeftGraph>k__BackingField: {fileID: 11400000, guid: 8273ca9ef90a49f4592c0a2ab8d5850e,
+      type: 2}
+    <RightGraph>k__BackingField: {fileID: 11400000, guid: b52e514267a4f9745a1a5401b54742ef,
+      type: 2}
+  - <Name>k__BackingField: Remove Start Lock
+    <LeftGraph>k__BackingField: {fileID: 11400000, guid: dc805a64a460021498b233b7c64d5410,
+      type: 2}
+    <RightGraph>k__BackingField: {fileID: 11400000, guid: 627edd6e604a8b7439f57bb6ecde2264,
+      type: 2}
+  - <Name>k__BackingField: Treasure
+    <LeftGraph>k__BackingField: {fileID: 11400000, guid: dfb490aad410369448ff88927d2ac518,
+      type: 2}
+    <RightGraph>k__BackingField: {fileID: 11400000, guid: 48fdb8ae2ee4a8b4eb83a5d80eb1ec48,
+      type: 2}
+  <SymbolList>k__BackingField:
+  - Name: S
+    Type: 1
+  - Name: T
+    Type: 1
+  - Name: start
+    Type: 2
+  - Name: goal
+    Type: 2
+  - Name: t
+    Type: 2
+  - Name: k
+    Type: 2
+  - Name: l
+    Type: 2
+  - Name: b
+    Type: 2
+  - Name: key
+    Type: 3

@@ -6,10 +6,6 @@ using UnityEngine.UIElements;
 using System;
 using UnityEditor;
 using System.Linq;
-using Codice.CM.Common.Serialization;
-using Unity.Plastic.Newtonsoft.Json;
-using System.Collections.ObjectModel;
-using UnityEngine.Rendering.Universal;
 using GG.Utils;
 using GG.Data.Save;
 using GG.ScriptableObjects;
@@ -70,6 +66,21 @@ namespace GG.Editor {
                 nodes.ForEach(n => { if (n is GGNodeEditor gn) { gn.RemoveIdentifiers(nodes.Count() - nNodesRemoved); } });
             }
 
+            if (gvc.movedElements != null)
+            {
+                foreach (var g in gvc.movedElements)
+                {
+                    if (g is GGGroupEditor group)
+                    {
+                        group.Position = g.GetPosition().position;
+                    }
+                    else if (g is GGNodeEditor node)
+                    {
+                        node.Position = g.GetPosition().position;
+                    }
+                }
+            }
+
             return gvc;
         }
 
@@ -88,7 +99,7 @@ namespace GG.Editor {
                     GGNodeSaveData saveDataNode = new GGNodeSaveData
                     {
                         ID = ggNode.ID,
-                        Position = ggNode.GetPosition().position,
+                        Position = ggNode.Position,
                         Symbol = ggNode.NodeSymbol,
                         Identifier = ggNode.NodeIdentifier,
                         IsExactInput = ggNode.IsExactInput,
@@ -121,7 +132,7 @@ namespace GG.Editor {
                 {
                     ID = group.ID,
                     Weight = group.Weight,
-                    Position = group.GetPosition().position,
+                    Position = group.Position,
                     Name = group.title,
                 };
                 GroupSaveDataList.Add(groupSaveData);
@@ -195,6 +206,7 @@ namespace GG.Editor {
             group.title = title;
 
             group.SetPosition(new Rect(localMousePos, Vector2.zero));
+            group.Position = localMousePos;
 
             foreach (GraphElement ge in selection)
             {
@@ -272,6 +284,7 @@ namespace GG.Editor {
             node.AddPort("Node", Direction.Output, null, true);
 
             node.SetPosition(new Rect(pos, defaultNodeSize));
+            node.Position = pos;
 
             node.InitializeDropdown(Symbols);
 
@@ -285,14 +298,6 @@ namespace GG.Editor {
         public void CreateNode(string nodeName, Vector2 pos = default(Vector2))
         {
             var node = CreateGraphGrammarNode(nodeName, pos);
-            node.NodeIdentifier = nodes.Count();
-            AddElement(node);
-            nodes.ForEach((n) => { if (n is GGNodeEditor gn) { gn.AddIdentifiers(nodes.Count()); } });
-        }
-
-        public void CreateNode(GGNodeSaveData data, Vector2 pos = default(Vector2))
-        {
-            var node = CreateGraphGrammarNode(data.Symbol.Name, pos);
             node.NodeIdentifier = nodes.Count();
             AddElement(node);
             nodes.ForEach((n) => { if (n is GGNodeEditor gn) { gn.AddIdentifiers(nodes.Count()); } });

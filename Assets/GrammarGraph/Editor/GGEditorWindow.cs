@@ -14,13 +14,11 @@ using UnityEditor.UIElements;
 using UnityEngine;
 using UnityEngine.Assertions.Must;
 using UnityEngine.UIElements;
-using static Unity.VisualScripting.Metadata;
-using static UnityEditor.Progress;
 using GG.Utils;
 using GG.Editor.Utils;
-using GG.Data.Save;
-using GG.ScriptableObjects;
 using GG.Builder;
+using static GG.Editor.SymbolItem;
+using System.IO;
 
 namespace GG.Editor
 {
@@ -53,6 +51,12 @@ namespace GG.Editor
         private TabButton m_GraphViewResultTab;
         private TabButton m_RulesTab;
 
+        private bool m_OpenDialogueSave = true;
+        private string m_LoadedFilePath = "";
+
+        Dictionary<string, string> m_RenamedRules = new();
+        List<string> m_RemovedRules = new();
+
         [MenuItem("Window/Grammar Graph")]
         public static void OpenGraphGrammarWindow()
         {
@@ -77,7 +81,30 @@ namespace GG.Editor
             /// Initializing Toolbar
             Toolbar newToolbar = new Toolbar();
             rootVisualElement.Add(newToolbar);
-            var tbutton = new ToolbarButton(()=> { GGSaveGraph saveGraph = new GGSaveGraph(RulesToRuleGraphSaveData(Rules), Symbols); saveGraph.Save(m_GraphName.value); });
+            var tbutton = new ToolbarButton(()=> {
+
+                if (m_OpenDialogueSave)
+                {
+                    string path = EditorUtility.SaveFilePanel("Save Graph", GGSaveGraph.FolderPath, "New Graph", "asset");
+
+                    if (path.Length == 0) return;
+
+                    string directoryPath = Path.GetDirectoryName(path);
+                    string filename = Path.GetFileNameWithoutExtension(path);
+                    m_LoadedFilePath = path;
+                    m_OpenDialogueSave = false;
+
+                    if (GGSaveGraph.GraphExists(path))
+                    {
+                        GGSaveGraph.DeleteFolder(GGSaveGraph.FolderPath, filename);
+                    }
+                }
+
+                GGSaveGraph.Save(m_LoadedFilePath, RulesToRuleGraphSaveData(Rules), Symbols, m_RemovedRules, m_RenamedRules); 
+                m_RemovedRules.Clear();
+                m_RenamedRules.Clear();
+            });
+
             tbutton.text = "Save";
             newToolbar.Add(tbutton);
 
@@ -92,7 +119,7 @@ namespace GG.Editor
             m_GraphName.labelElement.style.alignContent = Align.Center; 
             newToolbar.Add(m_GraphName);
 
-            var vf2Button = new ToolbarButton(VF2Test);
+            var vf2Button = new ToolbarButton(SampleGraph);
             vf2Button.text = "Sample rules";
             newToolbar.Add(vf2Button);
 
@@ -169,14 +196,21 @@ namespace GG.Editor
         /// </summary>
         private void LoadGraph()
         {
-            GGSaveGraph saveGraph = new GGSaveGraph(RulesToRuleGraphSaveData(Rules), Symbols);
-            var saveData = GGSaveGraph.Load(m_GraphName.value);
+            string filePath = EditorUtility.OpenFilePanelWithFilters("", GGSaveGraph.FolderPath, new string[] { "ScriptableObject","asset" });
+
+            Debug.Log(filePath);
+
+            var saveData = GGSaveGraph.LoadAtPath(filePath);
 
             if (saveData == null)
             {
-                Debug.LogError($"No graph named: {m_GraphName.value} found");
+                string filename = Path.GetFileName(filePath);
+                Debug.LogError($"No graph named \"{filename}\" found");
                 return;
             }
+
+            m_LoadedFilePath = filePath;
+            m_OpenDialogueSave = false;
 
             foreach (var r in Rules) 
             {
@@ -217,7 +251,7 @@ namespace GG.Editor
         /// <summary>
         /// Creates sample graph
         /// </summary>
-        private void VF2Test()
+        private void SampleGraph()
         {
             foreach (GraphRule r in Rules)
             {
@@ -266,18 +300,15 @@ namespace GG.Editor
             }
 
 
-            GGSaveGraph saveGraph = new GGSaveGraph(RulesToRuleGraphSaveData(Rules), Symbols);
-            saveGraph.Save(m_GraphName.value);
-            
-            
-
-            var saveData = GGSaveGraph.Load(m_GraphName.value);
+            var saveData = GGSaveGraph.GetSaveDataSO(RulesToRuleGraphSaveData(Rules), Symbols);
 
             if (saveData == null)
             {
-                Debug.LogError("File does not exists");
+                Debug.LogError("Error loading Grammar Graph data");
                 return;
             }
+
+
 
             var ruleList = saveData.RuleList;
 
@@ -288,6 +319,10 @@ namespace GG.Editor
                 m_ResultGraphView.ClearGraph();
                 m_ResultGraphView.CreateFromSaveData(res.ToSaveData());
                 m_ResultGraphView.HideAllToggles();
+            }
+            else
+            {
+                Debug.Log("Null");
             }
 
             m_GraphTabbedView.Activate(m_GraphViewResultTab);
@@ -306,6 +341,20 @@ namespace GG.Editor
 
 
             return graphView;
+        }
+
+        private string RenameString(string newName, List<string> oldNames)
+        {
+            int counter = 0;
+            string modifiedString = newName;
+
+            while (oldNames.Any(s => s == modifiedString))
+            {
+                counter++;
+                modifiedString = IncrementCounter(newName, counter);
+            }
+
+            return modifiedString;
         }
 
         // Rename rule on double click
@@ -461,7 +510,44 @@ namespace GG.Editor
             {
                 var gri = new GraphRuleItem("Graph Rule");
 
-                gri.OnItemNameChange = (index, oldVal, newVal) => { string newName = RenameRule(newVal); GraphRule r = Rules[index]; r.ruleName = newName; Rules[index] = r; return newName; };
+                gri.OnItemNameChange = (index, oldVal, newVal) => { 
+                    string newName = RenameRule(newVal); 
+                    GraphRule r = Rules[index]; 
+                    r.ruleName = newName; 
+                    Rules[index] = r;
+
+                    string oldName = oldVal;
+
+                    if (m_RenamedRules.ContainsKey(oldVal))
+                    {
+                        oldName = m_RenamedRules[oldVal];
+                        Debug.Log($"Renamed: {oldVal} -> {oldName} to {newName} -> {oldName}");
+                        m_RenamedRules.Remove(oldVal);
+                    }
+                    else
+                    {
+                        Debug.Log("Adding to renamed rules: " + newName + " -> " + oldName);
+                    }
+
+                    m_RenamedRules[newName] = oldName;
+
+                    return newName; 
+                };
+                
+                gri.OnItemDelete = (ruleName) => { 
+                    var r = Rules.Find(rule => rule.ruleName == ruleName); 
+                    Rules.Remove(r);
+
+                    if (m_RenamedRules.ContainsKey(ruleName))
+                    {
+                        m_RemovedRules.Add(m_RenamedRules[ruleName]);
+                        m_RenamedRules.Remove(ruleName);
+                    }
+                    else
+                        m_RemovedRules.Add(r.ruleName); 
+                    
+                    listView.RefreshItems(); 
+                };
 
                 return gri;
             };
@@ -475,6 +561,8 @@ namespace GG.Editor
                     it.Index = index;
                 }
             };
+
+            
 
             listView.itemsSource = Rules;
 
@@ -659,8 +747,10 @@ namespace GG.Editor
         TextField m_NameTextField;
 
         public delegate string NameChange(int index, string oldName, string newName);
+        public delegate void DeleteItem(string ruleName);
 
         public NameChange OnItemNameChange = null;
+        public DeleteItem OnItemDelete = null;
 
         public int Index = 0;
 
@@ -711,7 +801,7 @@ namespace GG.Editor
 
             Add(m_Root);
 
-
+            this.RegisterCallback<KeyDownEvent>(OnKeyPressed);
         }
 
         public void SetName(string text)
@@ -737,6 +827,14 @@ namespace GG.Editor
 
                 m_Root.Add(m_NameTextField);
                 m_NameTextField.Focus();
+            }
+        }
+
+        private void OnKeyPressed(KeyDownEvent keyEvent)
+        {
+            if (keyEvent.keyCode == KeyCode.Delete)
+            {
+                OnItemDelete?.Invoke(RuleName);
             }
         }
     }

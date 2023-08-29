@@ -21,7 +21,7 @@ namespace GG.Data.Save
     {
         [field:SerializeField] public string Filename { get; set; }
         [field:SerializeField] public List<RuleSaveData> RuleList { get; set; }
-        [field: SerializeField] public List<Symbol> SymbolList { get; set; }
+        [field:SerializeField] public List<Symbol> SymbolList { get; set; }
 
         public void Initialize(string filename)
         {

@@ -1,0 +1,42 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 743aa8bb7118ace49a2fe795a0367d46, type: 3}
+  m_Name: PCGBookGraphRGraphNodes
+  m_EditorClassIdentifier: 
+  NodeSaveData:
+  - <ID>k__BackingField: de7bd01f-45ea-4f17-864d-7c0db03ed0a3
+    <Symbol>k__BackingField:
+      Name: l
+      Type: 2
+    <Identifier>k__BackingField: 0
+    <GroupID>k__BackingField: 5d334a81-eecb-4ac4-9963-68a607beac68
+    <Position>k__BackingField: {x: 108, y: 550.6667}
+    <IsExactInput>k__BackingField: 0
+    <IsExactOutput>k__BackingField: 0
+  - <ID>k__BackingField: a8a36a69-80fc-44a1-bd78-9e091f81b27f
+    <Symbol>k__BackingField:
+      Name: t
+      Type: 2
+    <Identifier>k__BackingField: 0
+    <GroupID>k__BackingField: fba9e903-95d9-429a-ae1c-8e6a636deaf1
+    <Position>k__BackingField: {x: 140, y: 336.66666}
+    <IsExactInput>k__BackingField: 0
+    <IsExactOutput>k__BackingField: 0
+  - <ID>k__BackingField: 31e57ca2-2349-4d1b-9ab0-4331e59f30b0
+    <Symbol>k__BackingField:
+      Name: k
+      Type: 2
+    <Identifier>k__BackingField: 0
+    <GroupID>k__BackingField: 8fc64b41-6040-4de4-8e41-af8c50f94fe4
+    <Position>k__BackingField: {x: 123.33331, y: 76.66667}
+    <IsExactInput>k__BackingField: 0
+    <IsExactOutput>k__BackingField: 0

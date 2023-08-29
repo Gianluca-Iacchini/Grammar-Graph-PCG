@@ -1,0 +1,33 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 743aa8bb7118ace49a2fe795a0367d46, type: 3}
+  m_Name: PCGBookGraphLGraphNodes
+  m_EditorClassIdentifier: 
+  NodeSaveData:
+  - <ID>k__BackingField: 47d13b98-e689-4b10-b926-61813dfa19a4
+    <Symbol>k__BackingField:
+      Name: T
+      Type: 1
+    <Identifier>k__BackingField: 0
+    <GroupID>k__BackingField: 
+    <Position>k__BackingField: {x: 90, y: 197.33334}
+    <IsExactInput>k__BackingField: 0
+    <IsExactOutput>k__BackingField: 0
+  - <ID>k__BackingField: 3ed6e043-06d9-4968-95d7-167f143f20a7
+    <Symbol>k__BackingField:
+      Name: goal
+      Type: 2
+    <Identifier>k__BackingField: 1
+    <GroupID>k__BackingField: 
+    <Position>k__BackingField: {x: 306.66666, y: 197.33334}
+    <IsExactInput>k__BackingField: 0
+    <IsExactOutput>k__BackingField: 0

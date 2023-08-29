@@ -6,8 +6,11 @@ using UnityEngine;
 
 public class VF2
 {
+    private static bool m_FoundFirst = false;
+
     public static List<Dictionary<GGNode, GGNode>> FindSubgraphIsomorphisms(GGGraph patternGraph, GGGraph targetGraph)
     {
+        m_FoundFirst = false;
         var result = new List<Dictionary<GGNode, GGNode>>();
         var state = new VF2State(patternGraph, targetGraph);
         Backtrack(state, result);
@@ -20,6 +23,7 @@ public class VF2
         {
             // Found a valid isomorphism, add it to the result
             result.Add(new Dictionary<GGNode, GGNode>(state.MappedNodes));
+            m_FoundFirst = true;
             return;
         }
 
@@ -30,6 +34,8 @@ public class VF2
         // Iterate over all unmatched nodes in the target graph
         foreach (GGNode currentNodeTarget in state.GetUnmatchedNodesTarget())
         {
+            if (m_FoundFirst) return;
+
             if (state.AreCompatible(currentNodePattern, currentNodeTarget))
             {
                 // Check if the neighbors of the current pattern and target nodes are compatible

@@ -16,6 +16,8 @@ namespace GG.Editor
 
         private TextField m_WeightTextField;
 
+        public Vector2 Position = Vector2.zero;
+
         public GGGroupEditor()
         {
             m_WeightTextField = new TextField() { label = "Weight", value = "1"};

@@ -1,12 +1,14 @@
 using GG.Builder;
+using GG.Data.Save;
+using GG.ScriptableObjects;
 using GG.Utils;
 using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
-using Unity.Mathematics;
 using Unity.VisualScripting;
 using UnityEditor.Experimental.GraphView;
+using UnityEditor.ShaderGraph.Internal;
 using UnityEngine;
 using UnityEngine.UIElements;
 using static UnityEditor.PlayerSettings;
@@ -15,23 +17,7 @@ namespace PCG
 {
     public class PCGMap : MonoBehaviour
     {
-        public struct GridCoord
-        {
-            public int I;
-            public int J;
-
-            public GridCoord(int row, int col)
-            {
-                I = row;
-                J = col;
-            }
-
-            public GridCoord(float row, float col)
-            {
-                I = Mathf.FloorToInt(row);
-                J = Mathf.FloorToInt(col);
-            }
-        }
+        
 
         [SerializeField]
         private Room roomPrefab;
@@ -44,7 +30,19 @@ namespace PCG
 
         [SerializeField]
         private int NumberOfRooms = 10;
-        
+
+        [SerializeField]
+        private GGSaveDataSO GrammarGraph;
+
+
+        private const float RepulsiveForceFactor = 0.5f;
+        private const float AttractiveForceFactor = 0.1f;
+        private const float DampingFactor = 0.99f;
+        private const float ConvergenceThreshold = 0.01f;
+        private const float MaxForce = 1000f;
+        private const float RepulsionDistance = 1.5f;
+
+        private const float SpringForce = 0.1f;
 
         private List<Room> RoomList;
 
@@ -59,9 +57,6 @@ namespace PCG
         private bool isGenerating = false;
 
         GGGraph m_Graph;
-
-        int[] row = new int[] { -1, 0, 0, 1 };
-        int[] col = new int[] { 0, -1, 1, 0 };
 
         void Start()
         {
@@ -112,16 +107,39 @@ namespace PCG
             DeleteAllRooms();
             InitializeGrids();
             m_Graph = GetGraph();
-            
-            while (!SpawnPrefabs(m_Graph))
+
+            int maxTries = 20;
+
+            if (m_Graph == null)
             {
                 m_Graph = GetGraph();
+
+                maxTries--;
+
+                if (maxTries <= 0)
+                {
+                    Debug.LogError("Could not generate valid graph");
+                    isGenerating = false;
+                    yield break;
+                }
+
                 yield return null;
             }
+
+            
+            yield return SpawnRooms(m_Graph);
 
 
             ConnectRooms(m_Graph);
             isGenerating = false;
+
+            float minX = RoomList.Min(x => x.transform.position.x);
+            float maxX = RoomList.Max(x => x.transform.position.x);
+
+            float minZ = RoomList.Min(x => x.transform.position.z); 
+            float maxZ = RoomList.Max(x => x.transform.position.z);
+
+            Camera.main.transform.position = new Vector3((minX + maxX) / 2, Camera.main.transform.position.y ,(minZ + maxZ) / 2);
         }
 
 
@@ -147,16 +165,20 @@ namespace PCG
                     if (e.EdgeSymbol.Type == GraphSymbolType.Edge)
                     {
                         var keyNode = RoomList.Find(x => x.RoomNode == e.EndNode);
-                        r.AddConnection(keyNode.GetComponent<Room>(), Color.green);
+
+                        r.AddConnection(keyNode.GetComponent<Room>(), e.EdgeSymbol);
 
                         continue;
                     }
 
                     var toNode = RoomList.Find(x => x.RoomNode == e.EndNode);
-                    r.AddConnection(toNode.GetComponent<Room>(), Color.white);
+                    r.AddConnection(toNode.GetComponent<Room>(), e.EdgeSymbol);
                 }
                 r.ToggleKeyLines(false);
             }
+
+            foreach (Room r in RoomList)
+                r.CreateCorridors(0.5f);
         }
 
         private void InitializeGrids()
@@ -174,250 +196,121 @@ namespace PCG
             GridOccupancy = roomGrid;
         }
 
-        private Vector2 PositionToGrid(Vector2 postion)
-        {
-            int cellCoordX = (int)(Mathf.Floor(postion.x / CellSize));
-            int cellCoordY = (int)(Mathf.Floor(postion.y / CellSize));
-
-            cellCoordX = Math.Clamp(cellCoordX, 0, (int)GridSize.x - 1);
-            cellCoordY = Math.Clamp(cellCoordY, 0, (int)GridSize.y - 1);
-
-            if (!GridOccupancy[cellCoordX, cellCoordY])
-            {
-                GridOccupancy[cellCoordX, cellCoordY] = true;
-                return new Vector2(cellCoordX, cellCoordY);
-            }
-            else if (cellCoordY + 1 < GridSize.y && !GridOccupancy[cellCoordX, cellCoordY + 1])
-            {
-                GridOccupancy[cellCoordX, cellCoordY + 1] = true;
-                return new Vector2(cellCoordX, cellCoordY + 1);
-            }
-            else if (cellCoordY - 1 >= 0 && !GridOccupancy[cellCoordX, cellCoordY - 1])
-            {
-                GridOccupancy[cellCoordX, cellCoordY - 1] = true;
-                return new Vector2(cellCoordX, cellCoordY - 1);
-            }
-            else if (cellCoordX + 1 < GridSize.x && !GridOccupancy[cellCoordX + 1, cellCoordY])
-            {
-                GridOccupancy[cellCoordX + 1, cellCoordY] = true;
-                return new Vector2(cellCoordX + 1, cellCoordY);
-            }
-            else if (cellCoordX - 1 >= 0 && !GridOccupancy[cellCoordX - 1, cellCoordY])
-            {
-                GridOccupancy[cellCoordX - 1, cellCoordY] = true;
-                return new Vector2(cellCoordX - 1, cellCoordY);
-            }
-
-            else if (cellCoordX + 1 < GridSize.x && cellCoordY + 1 < GridSize.y && !GridOccupancy[cellCoordX + 1, cellCoordY + 1])
-            {
-                GridOccupancy[cellCoordX + 1, cellCoordY + 1] = true;
-                return new Vector2(cellCoordX + 1, cellCoordY + 1);
-            }
-            else if (cellCoordX - 1 >= 0 && cellCoordY - 1 >= 0 && !GridOccupancy[cellCoordX - 1, cellCoordY - 1])
-            {
-                GridOccupancy[cellCoordX - 1, cellCoordY - 1] = true;
-                return new Vector2(cellCoordX - 1, cellCoordY - 1);
-            }
-            else if (cellCoordX + 1 < GridSize.x && cellCoordY - 1 >= 0 && !GridOccupancy[cellCoordX + 1, cellCoordY - 1])
-            {
-                GridOccupancy[cellCoordX + 1, cellCoordY - 1] = true;
-                return new Vector2(cellCoordX + 1, cellCoordY - 1);
-            }
-            else if (cellCoordX - 1 >= 0 && cellCoordY + 1 < GridSize.y && !GridOccupancy[cellCoordX - 1, cellCoordY + 1])
-            {
-                GridOccupancy[cellCoordX - 1, cellCoordY + 1] = true;
-                return new Vector2(cellCoordX - 1, cellCoordY + 1);
-            }
-
-            return new Vector2(-1, -1);
-        }
-
+       
         private GGGraph GetGraph()
         {
-            var saveData = GGSaveGraph.Load("FirstGraph");
-            var ruleList = saveData.RuleList;
-            GGGraph res = GGBuilder.ApplyAllRules(ruleList, NumberOfRooms);
-
-            return res;
-        }
-
-        private GameObject CreateRoom(Vector2 bottomLeftCorner, Vector2 topRightCorner)
-        {
-            Vector3 bottomLeftV = new Vector3(bottomLeftCorner.x, 0, bottomLeftCorner.y);
-            Vector3 bottomRightV = new Vector3(topRightCorner.x, 0, bottomLeftCorner.y);
-            Vector3 topLeft = new Vector3(bottomLeftCorner.x, 0, topRightCorner.y);
-            Vector3 topRight = new Vector3(topRightCorner.x, 0, topRightCorner.y);
-
-            Vector3[] vertices = new Vector3[]
+            if (GrammarGraph != null)
             {
-                topLeft,
-                topRight,
-                bottomLeftV,
-                bottomRightV,
-            };
+                var ruleList = GrammarGraph.RuleList;
+                GGGraph res = GGBuilder.ApplyAllRules(ruleList, NumberOfRooms);
 
-            Vector2[] UVs = new Vector2[vertices.Length];
-            
-            for (int i = 0; i < UVs.Length; i++)
-            {
-                UVs[i] = new Vector2(vertices[i].x, vertices[i].z);
+                if (res != null)
+                {
+                    return res;
+                }
             }
 
-            int[] triangles = new int[]
-            {
-                0, 1, 2,
-                2, 1, 3
-            };
+            Debug.LogError("Error loading Grammar Graph");
 
-            Mesh mesh = new Mesh();
-            mesh.vertices = vertices;
-            mesh.uv = UVs;
-            mesh.triangles = triangles;
-
-            GameObject dngeonFloor = new GameObject("Mesh", typeof(MeshFilter), typeof(MeshRenderer), typeof(Room));
-            
-            dngeonFloor.transform.position = Vector3.zero;
-            dngeonFloor.transform.localScale = Vector3.one;
-            dngeonFloor.GetComponent<MeshFilter>().mesh = mesh;
-            dngeonFloor.GetComponent<MeshRenderer>().material = null;
-
-            return dngeonFloor;
+            return null;
         }
 
-        private Vector2 AddToAdjacent(Vector2 nodePosition)
+        private IEnumerator SpawnRooms(GGGraph graph)
         {
-            int cellCoordX = Mathf.FloorToInt(nodePosition.x / CellSize);
-            int cellCoordY = Mathf.FloorToInt(nodePosition.y / CellSize);
 
-            cellCoordX = Math.Clamp(cellCoordX, 0, (int)GridSize.x - 1);
-            cellCoordY = Math.Clamp(cellCoordY, 0, (int)GridSize.y - 1);
-
-            Vector2 pos = new Vector2(-10, -10);
-
-            for (int i = 0; i < Math.Max(GridOccupancy.GetLength(0), GridOccupancy.GetLength(1)); i++)
-            {
-                if (cellCoordX + i < GridOccupancy.GetLength(0))
-                {
-                    if (!GridOccupancy[i + cellCoordX, cellCoordY])
-                    {
-                        GridOccupancy[i + cellCoordX, cellCoordY] = true;
-                        pos = new Vector2(i + cellCoordX, cellCoordY);
-                        break;
-                    }
-                }
-                if (cellCoordX - i >= 0)
-                {
-                    if (!GridOccupancy[cellCoordX - i, cellCoordY])
-                    {
-                        GridOccupancy[cellCoordX - i, cellCoordY] = true;
-                        pos = new Vector2(cellCoordX - i, cellCoordY);
-                        break;
-                    }
-                }
-                if (cellCoordY + i < GridOccupancy.GetLength(1))
-                {
-                    if (!GridOccupancy[cellCoordX, i + cellCoordY])
-                    {
-                        GridOccupancy[cellCoordX, i + cellCoordY] = true;
-                        pos = new Vector2(cellCoordX, i + cellCoordY);
-                        break;
-                    }
-                }
-                if (cellCoordY - i >= 0)
-                {
-                    if (!GridOccupancy[cellCoordX, cellCoordY - i])
-                    {
-                        GridOccupancy[cellCoordX, cellCoordY - i] = true;
-                        pos = new Vector2(cellCoordX, cellCoordY - i);
-                        break;
-                    }
-                }
-                if (cellCoordX + i < GridOccupancy.GetLength(0) && cellCoordY + i < GridOccupancy.GetLength(1))
-                {
-                    if (!GridOccupancy[i + cellCoordX, i + cellCoordY])
-                    {
-                        GridOccupancy[i + cellCoordX, i + cellCoordY] = true;
-                        pos = new Vector2(i + cellCoordX, i + cellCoordY);
-                        break;
-                    }
-                }
-                if (cellCoordX - i >= 0 && cellCoordY - i >= 0)
-                {
-                    if (!GridOccupancy[cellCoordX - i, cellCoordY - i])
-                    {
-                        GridOccupancy[cellCoordX - i, cellCoordY - i] = true;
-                        pos = new Vector2(cellCoordX - i, cellCoordY - i);
-                        break;
-                    }
-                }
-                if (cellCoordX + i < GridOccupancy.GetLength(0) && cellCoordY - i >= 0)
-                {
-                    if (!GridOccupancy[i + cellCoordX, cellCoordY - i])
-                    {
-                        GridOccupancy[i + cellCoordX, cellCoordY - i] = true;
-                        pos = new Vector2(i + cellCoordX, cellCoordY - i);
-                        break;
-                    }
-                }
-                if (cellCoordX - i >= 0 && cellCoordY + i < GridOccupancy.GetLength(1))
-                {
-                    if (!GridOccupancy[cellCoordX - i, i + cellCoordY])
-                    {
-                        GridOccupancy[cellCoordX - i, i + cellCoordY] = true;
-                        pos = new Vector2(cellCoordX - i, i + cellCoordY);
-                        break;
-                    }
-                }
-            }
-            return pos;
-        }
-
-        private bool SpawnPrefabs(GGGraph graph)
-        {
             Vector2 startPos = GetStartPositionOffset(graph);
             Vector2 gridScale = GetScaleGraph(graph);
 
-            Queue<GGNode> nodesToVisit = new Queue<GGNode>();
+            // Set starting room position
+            Queue<Room> nodesToVisit = new Queue<Room>();
             GGNode startNode = graph.Nodes.Find(n => n.NodeSymbol.Name == "start");
-            nodesToVisit.Enqueue(startNode);
+            Room startRoom = CreateRoom(startNode, new Vector2Int(0, GridSize.y / 2));
+            GridOccupancy[0, GridSize.y / 2] = true;
 
-            Vector2 previousPos = startNode.Position;
+            nodesToVisit.Enqueue(startRoom);
 
             List<GGNode> visitedNodes = new List<GGNode>();
 
             while (nodesToVisit.Count > 0)
             {
-                GGNode currentNode = nodesToVisit.Dequeue();
-
-                Vector2 pos = (currentNode.Position - startPos) * gridScale;
-                Vector2 gridPos = PositionToGrid(pos);
-
-                if (gridPos.x < 0 && gridPos.y < 0 )
-                {
-                    gridPos = AddToAdjacent(pos);
-                }
-
-                previousPos = currentNode.Position;
-
-                Room r = Instantiate(roomPrefab, new Vector3(gridPos.x * CellSize, 0, gridPos.y * CellSize), Quaternion.identity);
-                r.GetComponent<MeshRenderer>().material.color = SetColor(currentNode.NodeSymbol);
-                r.RoomNode = currentNode;
-                r.CellCoord = new GridCoord(gridPos.x, gridPos.y);
-                ChangeSize(r.gameObject);
+                Room r = nodesToVisit.Dequeue();
+                GGNode currentNode = r.RoomNode;
                 RoomList.Add(r);
-                r.transform.parent = this.transform;
 
-                foreach (GGEdge e in graph.GetEdgesFromNode(currentNode))
+                int zeroOne = UnityEngine.Random.Range(0, 2);
+                int minusOrPlus = zeroOne * 2 - 1;
+
+                // Randomly sets the y coordinate of the next room as being one higher or one lower than the current room
+                int cellY = r.Cell.y - minusOrPlus;
+
+                // If the room has only one child, then randomly choose it to place at the same height as the current room
+                // This is done to reduce zig-zaging between rooms
+                if (graph.GetEdgesFromNode(currentNode).Count(e => e.EdgeSymbol.Type != GraphSymbolType.Edge) == 1)
+                    if (UnityEngine.Random.Range(0, 10) < 7)
+                        cellY = r.Cell.y;
+
+                // Order by increasing number of children to avoid overlaps.
+                var edges = graph.GetEdgesFromNode(currentNode);
+                edges = edges.OrderBy((x) => graph.GetEdgesFromNode(x.EndNode).Count(e => e.EdgeSymbol.Type != GraphSymbolType.Edge)).ToList();
+
+                // Used to avoid stacking rooms vertically, which will cause corridors to run inside rooms
+                bool alreadyPlacedVertical = false;
+                // Used to keep the map compact (reduces spaces between rooms)
+                int placedChildren = 0;
+
+                for (int i = 0; i < edges.Count; i++)
                 {
+                    GGEdge e = edges[i];
+                    GGEdge nextChild = i + 1 < edges.Count ? edges[i + 1] : null;
+
+                    // Only consider direct relationships, (i.e. discard key relationships)
+                    if (e.EdgeSymbol.Type == GraphSymbolType.Edge) continue;
+                    
                     if (visitedNodes.Contains(e.EndNode)) continue;
 
-                    if (e.EdgeSymbol.Type != GraphSymbolType.Edge)
+                    // Get number of rooms connected to the current child and the next child
+                    int nChildren = graph.GetEdgesFromNode(e.EndNode).Count(e => e.EdgeSymbol.Type != GraphSymbolType.Edge);
+                    int nChildrenNext = i + 1 < edges.Count ? graph.GetEdgesFromNode(nextChild.EndNode).Count(e => e.EdgeSymbol.Type != GraphSymbolType.Edge) : 0;
+
+                    // Place the room one cell to the right of the current room
+                    int cellX = r.Cell.x + 1;
+
+                    // If the current room has only one child, then place the next room on the same horizontal coordinate
+                    // But on a different vertical coordinate, we need to change the y coordinate becayse we dont know if the cellY coordinate was left unchanged.
+                    if (nChildren < 1 && cellX > 0 && !alreadyPlacedVertical)
                     {
-                        e.EndNode.Position = previousPos + new Vector2(200, 0);
-                        nodesToVisit.Enqueue(e.EndNode);
-                        visitedNodes.Add(e.EndNode);
+                        if (!GridOccupancy[cellX - 1, cellY])
+                        {
+                            cellX -= 1;
+                            alreadyPlacedVertical = true;
+                        }
+                        else if (cellY - 1 >=0 && !GridOccupancy[cellX - 1, cellY -1])
+                        {
+                            cellX -= 1;
+                            cellY -= 1;
+                            alreadyPlacedVertical = true;
+                        }
+                        else if (cellY + 1 < GridOccupancy.GetLength(1) && !GridOccupancy[cellX - 1, cellY + 1])
+                        {
+                            cellX -= 1;
+                            cellY += 1;
+                            alreadyPlacedVertical = true;
+                        }
                     }
+
+                    // Returns the closest empty cell starting from (cellX, cellY) 
+                    Vector2Int emptyCell = GetEmptyCell(r, cellX, cellY);
+                    Room newRoom = CreateRoom(e.EndNode, emptyCell);
+                    newRoom.ParentRoom = r;
+                        
+
+                    nodesToVisit.Enqueue(newRoom);
+                    visitedNodes.Add(e.EndNode);
+
+                    cellY += minusOrPlus * (Math.Max(1,nChildren - placedChildren + nChildrenNext));
                 }
+
+                yield return null;
             }
 
             Vector3 startPosition = RoomList.Find(rooms => rooms.RoomNode.NodeSymbol.Name == "start").transform.position;
@@ -428,19 +321,53 @@ namespace PCG
             {
                 r.transform.position += offset;
             }
-
-            return true;
         }
 
-        private Color SetColor(Symbol nodeSymbol)
+        private Room CreateRoom(GGNode node, Vector2Int CellCoords)
         {
-            if (nodeSymbol.Name == "start") return Color.green;
-            else if (nodeSymbol.Name == "end") return Color.red;
-            else if (nodeSymbol.Name == "l") return Color.cyan;
-            else if (nodeSymbol.Name == "k") return Color.blue;
-            else if (nodeSymbol.Name == "t") return Color.gray;
+            
+            Room r = Instantiate(roomPrefab, new Vector3(CellCoords.x * CellSize, 0, CellCoords.y * CellSize), Quaternion.identity);
+            r.RoomNode = node;
+            r.Cell = CellCoords;
+            ChangeSize(r);
+            r.transform.parent = this.transform;
 
-            else return Color.white;
+            return r;
+        }
+
+        // Avoid cells from overlapping
+        private Vector2Int GetEmptyCell(Room parent, int x, int y)
+        {
+            // This should never happen
+            if (x >= GridOccupancy.GetLength(0) || y >= GridOccupancy.GetLength(1)) new Vector2Int(-1,-1);
+
+            if (!GridOccupancy[x, y])
+            {
+                GridOccupancy[x, y] = true;
+                return new Vector2Int(x, y);    
+            }
+            else
+            {
+                int i = 0;
+                y = parent.Cell.y;
+                while (y + i < GridOccupancy.GetLength(1) && y - i >= 0)
+                {
+                    if (!GridOccupancy[x, y + i])
+                    {
+                        GridOccupancy[x, y + i] = true;
+                        return new Vector2Int(x, y + i);
+                    }
+                    else if (!GridOccupancy[x, y - i])
+                    {
+                        GridOccupancy[x, y - i] = true;
+                        return new Vector2Int(x, y - i);
+                    }
+
+                    i++;
+                }
+
+                return new Vector2Int(-1, -1);
+            }
         }
 
         private Vector2 GetStartPositionOffset(GGGraph graph)
@@ -456,9 +383,12 @@ namespace PCG
             return Vector2.zero;
         }
 
-        private void ChangeSize(GameObject go)
+        private void ChangeSize(Room r)
         {
-            go.transform.localScale = new Vector3(CellSize * 0.75f, 0.1f, CellSize * 0.75f);
+            float randomX = UnityEngine.Random.Range(0.25f, 0.85f) * CellSize;
+            float randomZ = UnityEngine.Random.Range(0.25f, 0.85f) * CellSize;
+
+            r.CreateMeshFloor(randomX, randomZ);
         }
 
 

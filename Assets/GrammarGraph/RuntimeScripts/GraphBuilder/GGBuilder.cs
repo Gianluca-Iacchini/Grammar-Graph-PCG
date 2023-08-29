@@ -9,8 +9,6 @@ namespace GG.Builder
 {
     public class GGBuilder
     {
-
-
         public GGBuilder()
         {
 
@@ -54,18 +52,21 @@ namespace GG.Builder
                 while (i < ruleSaveDataList.Count);
 
                 // Just to keep the graph pretty, we only discard results where any node as more than 4 edges incoming or outgoing, we also discard nodes which have more than 3 main Edges.
-                foreach (var node in startingGraph.Nodes)
-                {
-                    if (startingGraph.GetEdgesToNode(node).Count > 4 || startingGraph.GetEdgesFromNode(node).Count > 4
-                        || startingGraph.GetEdgesFromNode(node).Count(e => { return e.EdgeSymbol.Type != Utils.GraphSymbolType.Edge;}) > 3)
-                    {
-                        return ApplyAllRules(ruleSaveDataList, MaxNodes);
-                    }
-                }
+                //foreach (var node in startingGraph.Nodes)
+                //{
+                //    //if (startingGraph.GetEdgesToNode(node).Count > 4 || startingGraph.GetEdgesFromNode(node).Count > 4
+                //    //    || startingGraph.GetEdgesFromNode(node).Count(e => { return e.EdgeSymbol.Type != Utils.GraphSymbolType.Edge;}) > 3)
+                //    //{
+                        
+                //        return ApplyAllRules(ruleSaveDataList, MaxNodes);
+                //    //}
+                //}
 
+                //m_MaxTries = 20;
                 return startingGraph;
             }
 
+            //m_MaxTries = 20;
             return null;
         }
 

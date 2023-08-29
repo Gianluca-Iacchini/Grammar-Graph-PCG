@@ -15,18 +15,22 @@ public class GGGraph
 
     public Dictionary<GGNode, List<GGNode>> AdjacencyList { get; private set; } = new();
 
+    public Dictionary<GGNode, List<GGEdge>> EdgesOutList { get; private set; } = new();
+    public Dictionary<GGNode, List<GGEdge>> EdgesInList { get; private set; } = new();
+
     public GGGraph()
     {
     }
 
     public GGGraph(GGGraphSaveData graphSaveData)
     {
+
         Dictionary<string, GGNode> saveNodeDict = new Dictionary<string, GGNode>();
 
         foreach (var node in graphSaveData.Nodes) 
         {
             GGNode ggNode = new GGNode(node);
-            Nodes.Add(ggNode);
+            this.AddNode(ggNode);
 
             saveNodeDict.Add(node.ID, ggNode);
         }
@@ -41,8 +45,10 @@ public class GGGraph
 
 
             GGEdge ggEdge = new GGEdge(startNode, endNode, edge.EdgeSymbol);
+
             this.AddEdge(ggEdge);
         }
+
     }
 
     #region Edges
@@ -62,52 +68,59 @@ public class GGGraph
         if (!this.AdjacencyList.ContainsKey(edge.StartNode))
             this.AdjacencyList[edge.StartNode] = new List<GGNode>();
 
+        if (!this.EdgesOutList.ContainsKey(edge.StartNode))
+            this.EdgesOutList[edge.StartNode] = new List<GGEdge>();
+
+        if (!this.EdgesInList.ContainsKey(edge.EndNode))
+            this.EdgesInList[edge.EndNode] = new List<GGEdge>();
+
         this.AdjacencyList[edge.StartNode].Add(edge.EndNode);
+        this.EdgesOutList[edge.StartNode].Add(edge);
+        this.EdgesInList[edge.EndNode].Add(edge);
 
         this.Edges.Add(edge);
     }
 
     public List<GGEdge> GetEdgesFromNode(GGNode node)
     {
-        List<GGEdge> edges = new List<GGEdge>();
-
-        foreach (GGEdge e in Edges)
+        if (!EdgesOutList.ContainsKey(node))
         {
-            if (e.StartNode == node)
-            {
-                edges.Add(e);
-            }
+            return new List<GGEdge>();
         }
 
-        return edges;
+        return new List<GGEdge>(EdgesOutList[node]);
+
     }
 
     public List<GGEdge> GetEdgesToNode(GGNode node)
     {
-        List<GGEdge> edges = new List<GGEdge>();
+        //List<GGEdge> edges = new List<GGEdge>(Edges.Where(e=>e.EndNode == node));
 
-        foreach (GGEdge e in Edges)
+        //return edges;
+
+        if (!EdgesInList.ContainsKey(node))
         {
-            if (e.EndNode == node)
-            {
-                edges.Add(e);
-            }
+            return new List<GGEdge>();
         }
 
-        return edges;
+        return new List<GGEdge>(EdgesInList[node]);
     }
 
     public List<GGEdge> GetEdgesWithNode(GGNode node)
     {
         List<GGEdge> edges = new List<GGEdge>();
 
-        foreach (GGEdge e in Edges)
-        {
-            if (e.StartNode == node || e.EndNode == node)
-            {
-                edges.Add(e);
-            }
-        }
+        //foreach (GGEdge e in Edges)
+        //{
+        //    if (e.StartNode == node || e.EndNode == node)
+        //    {
+        //        edges.Add(e);
+        //    }
+        //}
+
+        edges.AddRange(EdgesOutList[node]);
+        edges.AddRange(EdgesInList[node]);
+
 
         return edges;
     }
@@ -115,6 +128,11 @@ public class GGGraph
     public void RemoveEdge(GGEdge e)
     {
         this.Edges.Remove(e);
+        this.EdgesOutList[e.StartNode].Remove(e);
+        this.EdgesInList[e.EndNode].Remove(e);
+
+        this.AdjacencyList[e.StartNode].Remove(e.EndNode);
+
     }
 
     public void RemoveEdgesFrom(GGNode node)
@@ -123,7 +141,7 @@ public class GGGraph
         {
             if (e.StartNode == node)
             {
-                this.Edges.Remove(e);
+                this.RemoveEdge(e);
             }
         }
     }
@@ -134,7 +152,7 @@ public class GGGraph
         {
             if (e.EndNode == node)
             {
-                this.Edges.Remove(e);
+                this.RemoveEdge(e);
             }
         }
     }
@@ -147,7 +165,7 @@ public class GGGraph
         {
             if (e.StartNode == node || e.EndNode == node)
             {
-                this.Edges.Remove(e);
+                this.RemoveEdge(e);
             }
         }
     }
@@ -185,6 +203,11 @@ public class GGGraph
 
     public void AddNode(GGNode node)
     {
+        if (!EdgesOutList.ContainsKey(node))
+            EdgesOutList[node] = new List<GGEdge>();
+        if (!EdgesInList.ContainsKey(node))
+            EdgesInList[node] = new List<GGEdge>();
+
         this.Nodes.Add(node);
     }
 
@@ -192,18 +215,22 @@ public class GGGraph
     {
         this.RemoveEdgesWith(node);
         this.Nodes.Remove(node);
+        this.AdjacencyList.Remove(node);
+        this.EdgesOutList.Remove(node);
+        this.EdgesInList.Remove(node);
     }
 
     public List<GGNode> GetNeighbours(GGNode node)
     {
         List<GGNode> nodes = new List<GGNode>();
 
-        foreach (GGEdge e in this.Edges)
+        foreach (GGEdge e in this.EdgesOutList[node])
         {
-            if (e.StartNode == node || e.EndNode == node)
-            {
-                nodes.Add(e.EndNode);
-            }
+            nodes.Add(e.EndNode);
+        }
+        foreach (GGEdge e in this.EdgesInList[node])
+        {
+            nodes.Add(e.StartNode);
         }
 
         return nodes;
@@ -216,7 +243,6 @@ public class GGGraph
         var items = AdjacencyList.Where(kvp => kvp.Value.Contains(node));
 
         neighboursIn = items.Select(kvp => kvp.Key).ToList();
-
         return neighboursIn;
     }
 

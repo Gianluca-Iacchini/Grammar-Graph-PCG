@@ -1,0 +1,25 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 885a68921d944b141951e67833e5f891, type: 3}
+  m_Name: PCGBookGraphLGraphEdges
+  m_EditorClassIdentifier: 
+  EdgeSaveData:
+  - <EdgeSymbol>k__BackingField:
+      Name: '*'
+      Type: 0
+    <StartNodeID>k__BackingField: f63ece8a-a8a6-4688-9c65-e5a077e22951
+    <EndNodeID>k__BackingField: 016a85ff-df79-482a-be38-e77edd1f3b4c
+  - <EdgeSymbol>k__BackingField:
+      Name: '*'
+      Type: 0
+    <StartNodeID>k__BackingField: 016a85ff-df79-482a-be38-e77edd1f3b4c
+    <EndNodeID>k__BackingField: 3cfb7b10-ecfe-41b1-a091-c9453ce1de9a

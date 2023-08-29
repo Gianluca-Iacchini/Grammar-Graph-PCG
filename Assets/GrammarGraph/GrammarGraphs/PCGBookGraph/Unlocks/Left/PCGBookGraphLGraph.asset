@@ -1,0 +1,22 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 49d3f78dbd647b14d9b7c289ca1f51da, type: 3}
+  m_Name: PCGBookGraphLGraph
+  m_EditorClassIdentifier: 
+  <ID>k__BackingField: c06c1518-c425-46c9-ad8a-aa43a0287128
+  <Filename>k__BackingField: PCGBookGraph
+  <Groups>k__BackingField: {fileID: 11400000, guid: da11221cb9d65aa4186390b888297c91,
+    type: 2}
+  <Nodes>k__BackingField: {fileID: 11400000, guid: d6621ce03857eec458effb41fab6de33,
+    type: 2}
+  <Edges>k__BackingField: {fileID: 11400000, guid: bec9f29332d147541b43fbf7ceb04083,
+    type: 2}

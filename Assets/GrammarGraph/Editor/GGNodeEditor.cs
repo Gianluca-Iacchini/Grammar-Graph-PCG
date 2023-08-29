@@ -21,6 +21,8 @@ namespace GG.Editor
 
         public GGGraphView graphView;
 
+        public Vector2 Position = Vector2.zero;
+
         private Symbol _nodeSymbol = Symbol.SymbolAsterisk();
         public Symbol NodeSymbol { get { return _nodeSymbol; }
             set {
