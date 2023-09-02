@@ -370,7 +370,7 @@ public class Room : MonoBehaviour
 
 
 
-            var obj = CreateCorridorGameObject(firstPoint, secondPoint, face, Thickness * 1.2f);
+            var obj = CreateCorridorGameObject(firstPoint, secondPoint, face);
             Vector3 wPos = obj.transform.localPosition;
             obj.transform.parent = this.transform;
             obj.transform.localPosition = wPos;
@@ -727,8 +727,6 @@ public class Room : MonoBehaviour
             }
             if (corLink.PreviousLink == null && corLink.NextLinks.Count > 0)
             {
-                //Vector3 doorPosition = new Vector3((corLink.BottomLeftCorner.x + corLink.TopRightCorner.x) / 2f, this.transform.position.y, corLink.BottomLeftCorner.z);
-
                 if (corLink.IsHorizontal())
                 {
                     GameObject door = CreateCorridorGameObject(new Vector3(corLink.TopRightCorner.x, 0, corLink.BottomLeftCorner.z), corLink.TopRightCorner + Vector3.up * CorridorHeight, WallFace.Right);
@@ -763,6 +761,8 @@ public class Room : MonoBehaviour
         AddRoomWalls();
         m_Mesh = CreateMesh(this.RoomBottomLeft, this.RoomTopRight, WallFace.Down, Thickness);
         m_MeshFilter.mesh = m_Mesh;
+        var boxColl = this.AddComponent<BoxCollider>();
+        boxColl.size = new Vector3(RoomWidth, Thickness, RoomHeight);
 
         CreateCorridorGameObject(this.RoomBottomLeft + Vector3.up * CorridorHeight, this.RoomTopRight + Vector3.up * CorridorHeight, WallFace.Top);
     }
@@ -926,7 +926,6 @@ public class Room : MonoBehaviour
             Vector3 oldWLocal = wallPiece.transform.localPosition;
             wallPiece.transform.parent = corridor.CorridorObject.transform;
             wallPiece.transform.localPosition = oldWLocal;
-            //wallPiece.GetComponent<MeshRenderer>().material.color = Color.blue;
 
             lastPoint = secondPoint;
         }
@@ -934,7 +933,7 @@ public class Room : MonoBehaviour
         return WallPieces;
     }
 
-    private GameObject CreateCorridorGameObject(Vector3 bottomLeft, Vector3 topRight, WallFace face = WallFace.Front, float thickness = 0.1f)
+    private GameObject CreateCorridorGameObject(Vector3 bottomLeft, Vector3 topRight, WallFace face = WallFace.Front)
     {
         Vector3 middlePoint = (bottomLeft + topRight) / 2f;
         bottomLeft -= middlePoint;
@@ -947,8 +946,6 @@ public class Room : MonoBehaviour
         corridor.AddComponent<MeshFilter>();
         corridor.AddComponent<MeshRenderer>();
         corridor.GetComponent<MeshRenderer>().material.color = Color.gray;
-
-        
 
         corridor.GetComponent<MeshFilter>().mesh = CreateMesh(bottomLeft, topRight, face, Thickness);
 

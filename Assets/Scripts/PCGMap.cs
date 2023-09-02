@@ -23,9 +23,6 @@ namespace PCG
         private Room roomPrefab;
 
         [SerializeField]
-        private Vector2Int GridSize = new Vector2Int(15, 15);
-
-        [SerializeField]
         private float CellSize;
 
         [SerializeField]
@@ -34,21 +31,19 @@ namespace PCG
         [SerializeField]
         private GGSaveDataSO GrammarGraph;
 
+        [SerializeField]
+        private GameObject PlayerPrefab;
 
-        private const float RepulsiveForceFactor = 0.5f;
-        private const float AttractiveForceFactor = 0.1f;
-        private const float DampingFactor = 0.99f;
-        private const float ConvergenceThreshold = 0.01f;
-        private const float MaxForce = 1000f;
-        private const float RepulsionDistance = 1.5f;
-
-        private const float SpringForce = 0.1f;
+        private GameObject PlayerClone;
 
         private List<Room> RoomList;
+
 
         public float CorridorWidth = 0.5f;
         public float RoomHeight = 3f;
         public float WallThickness = 0.1f;
+
+        private Vector2Int GridSize = new Vector2Int(15, 15);
 
         private bool m_ShowKeyLines = false;
         private bool m_ShowNodeLines = true;
@@ -59,10 +54,15 @@ namespace PCG
 
         private bool isGenerating = false;
 
+        private bool isPlaying = false;
+
         GGGraph m_Graph;
+
+        Camera mainCamera = null;
 
         void Start()
         {
+            mainCamera = Camera.main;
             RoomList = new List<Room>();
             InitializeGrids();
         }
@@ -97,6 +97,24 @@ namespace PCG
                     r.ToggleNodeLines(m_ShowNodeLines);
                 }
             }
+
+            if (Input.GetKeyDown(KeyCode.P))
+            {
+                if (!isPlaying)
+                {
+                    mainCamera.gameObject.SetActive(false);
+                    PlayerClone.SetActive(true);
+                    PlayerClone.GetComponent<BasicFPSControl>().Activate();
+                    isPlaying = true;
+                }
+                else
+                {
+                    mainCamera.gameObject.SetActive(true);
+                    PlayerClone.GetComponent<BasicFPSControl>().Deactivate();
+                    PlayerClone.SetActive(false);
+                    isPlaying = false;
+                }
+            }
         }
 
         
@@ -107,6 +125,7 @@ namespace PCG
 
         private IEnumerator roomGeneratorRoutine()
         {
+
             DeleteAllRooms();
             InitializeGrids();
             m_Graph = GetGraph();
@@ -186,6 +205,7 @@ namespace PCG
 
         private void InitializeGrids()
         {
+            GridSize = new Vector2Int(NumberOfRooms * 2, NumberOfRooms * 2);
             bool[,] roomGrid = new bool[GridSize.x, GridSize.y];
             
             for (int i = 0; i < GridSize.x; i++)
@@ -228,6 +248,7 @@ namespace PCG
             Queue<Room> nodesToVisit = new Queue<Room>();
             GGNode startNode = graph.Nodes.Find(n => n.NodeSymbol.Name == "start");
             Room startRoom = CreateRoom(startNode, new Vector2Int(0, GridSize.y / 2));
+
             GridOccupancy[0, GridSize.y / 2] = true;
 
             nodesToVisit.Enqueue(startRoom);
@@ -303,6 +324,7 @@ namespace PCG
 
                     // Returns the closest empty cell starting from (cellX, cellY) 
                     Vector2Int emptyCell = GetEmptyCell(r, cellX, cellY);
+
                     Room newRoom = CreateRoom(e.EndNode, emptyCell);
                     newRoom.ParentRoom = r;
                         
@@ -324,6 +346,9 @@ namespace PCG
             {
                 r.transform.position += offset;
             }
+
+            if (!PlayerClone) PlayerClone = Instantiate(PlayerPrefab);
+            PlayerClone.transform.position = startRoom.transform.position + new Vector3(0, 0.6f, 0);
         }
 
         private Room CreateRoom(GGNode node, Vector2Int CellCoords)
@@ -346,7 +371,8 @@ namespace PCG
         private Vector2Int GetEmptyCell(Room parent, int x, int y)
         {
             // This should never happen
-            if (x >= GridOccupancy.GetLength(0) || y >= GridOccupancy.GetLength(1)) new Vector2Int(-1,-1);
+            if (x >= GridOccupancy.GetLength(0) || y >= GridOccupancy.GetLength(1)) return new Vector2Int(-1,-1);
+            if (x < 0 || y < 0) return new Vector2Int(-1, -1);
 
             if (!GridOccupancy[x, y])
             {
