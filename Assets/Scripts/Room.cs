@@ -78,9 +78,9 @@ public class Room : MonoBehaviour
             this.TopRightCorner = TopRight;
         }
 
-        public float GetGameObjectLength(float corridorWidth)
+        public float GetGameObjectLength(float CorridorWidth)
         {
-            return difference.magnitude + corridorWidth;
+            return difference.magnitude + CorridorWidth;
         }
     }
 
@@ -104,7 +104,9 @@ public class Room : MonoBehaviour
     MeshFilter m_MeshFilter = null;
     Mesh m_Mesh = null;
 
-    float corridorHeight = 1.0f;
+    public float CorridorWidth = 0.5f;
+    public float CorridorHeight = 1.0f;
+    public float Thickness = 0.1f;
 
     //private Vector2 RoomSize = Vector2.zero;
     private Vector3 RoomBottomLeft = Vector3.zero;
@@ -118,9 +120,12 @@ public class Room : MonoBehaviour
 
     private Dictionary<CorridorLink, List<GameObject>> m_dGameObjectsPerCorridor = new Dictionary<CorridorLink, List<GameObject>>();
 
-    [SerializeField]
-    private int nRooms = 0;
 
+    [NonSerialized]
+    public List<GameObject> ExitDoors = new();
+
+    [NonSerialized]
+    public GameObject EntryDoor = null;
     
 
     public void Awake()
@@ -248,12 +253,6 @@ public class Room : MonoBehaviour
         }
     }
 
-    //public void CreateRoomMesh(float xSize, float ySize)
-    //{
-    //    m_Mesh = CreateMesh(xSize, ySize);
-    //    m_MeshFilter.mesh = m_Mesh;
-    //    //this.RoomSize = new Vector2(xSize, ySize);
-    //}
 
     public void CreateMeshFloor(float xSize, float ySize)
     {
@@ -331,11 +330,11 @@ public class Room : MonoBehaviour
             if (ExitCorridors.Contains(re))
             {
                 leftPoint = re.BottomLeftCorner;
-                rightPoint = re.BottomLeftCorner + re.perpendicular * 0.5f;
+                rightPoint = re.BottomLeftCorner + re.perpendicular * CorridorWidth;
             }
             else if (EntranceCorridors.Contains(re))
             {
-                leftPoint = re.TopRightCorner - re.perpendicular * 0.5f;
+                leftPoint = re.TopRightCorner - re.perpendicular * CorridorWidth;
                 rightPoint = re.TopRightCorner;
             }
 
@@ -367,11 +366,11 @@ public class Room : MonoBehaviour
             ordererPointList.Remove(firstPoint);
             ordererPointList.Remove(secondPoint);
 
-            firstPoint.y += corridorHeight;
+            secondPoint.y += CorridorHeight;
 
 
-            
-            var obj = CreateCorridorGameObject(firstPoint, secondPoint, face);
+
+            var obj = CreateCorridorGameObject(firstPoint, secondPoint, face, Thickness * 1.2f);
             Vector3 wPos = obj.transform.localPosition;
             obj.transform.parent = this.transform;
             obj.transform.localPosition = wPos;
@@ -379,178 +378,113 @@ public class Room : MonoBehaviour
     }
 
 
-    private Mesh CreateMesh(Vector3 bottomLeftAngle, Vector3 topRightAngle, WallFace faceDirection)
+    private Mesh CreateMesh(Vector3 bottomLeftAngle, Vector3 topRightAngle, WallFace faceDirection, float thickness = 0.1f)
     {
         Mesh mesh = new Mesh();
 
-        Vector3[] vertices = new Vector3[8];
-        Vector3[] normals = new Vector3[8];
-        Vector2[] uvs = new Vector2[8];
+        Vector3[] vertices = new Vector3[24];
+        Vector3[] normals = new Vector3[24] { 
+            transform.forward, transform.forward, transform.forward, transform.forward,
+            -transform.forward, -transform.forward, -transform.forward, -transform.forward,
+            
+            -transform.right, -transform.right, -transform.right, -transform.right,
+            transform.right, transform.right, transform.right, transform.right,
 
-        Vector3 inNormals = this.transform.forward;
-        Vector3 outNormals = -this.transform.forward;
+            -transform.up, -transform.up, -transform.up, -transform.up,
+            transform.up, transform.up, transform.up, transform.up
+        };
+        Vector2[] uvs = new Vector2[24];
 
-        vertices[0] = new Vector3(bottomLeftAngle.x, bottomLeftAngle.y, bottomLeftAngle.z);
-        vertices[1] = new Vector3(topRightAngle.x, bottomLeftAngle.y, topRightAngle.z);
-        vertices[2] = new Vector3(bottomLeftAngle.x, topRightAngle.y, bottomLeftAngle.z);
-        vertices[3] = new Vector3(topRightAngle.x, topRightAngle.y, topRightAngle.z);
-
-
-        if (faceDirection == WallFace.Top || faceDirection == WallFace.Down)
+        if (faceDirection == WallFace.Back || faceDirection == WallFace.Front)
         {
-            vertices[0] = new Vector3(bottomLeftAngle.x, bottomLeftAngle.y, bottomLeftAngle.z);
-            vertices[1] = new Vector3(topRightAngle.x, bottomLeftAngle.y, bottomLeftAngle.z);
-            vertices[2] = new Vector3(bottomLeftAngle.x, topRightAngle.y, topRightAngle.z);
-            vertices[3] = new Vector3(topRightAngle.x, topRightAngle.y, topRightAngle.z);
-        }    
-
-
-        vertices[4] = vertices[0];
-        vertices[5] = vertices[1];
-        vertices[6] = vertices[2];
-        vertices[7] = vertices[3];
-
-        switch (faceDirection)
+            vertices[0] = new Vector3(bottomLeftAngle.x - thickness / 2f, bottomLeftAngle.y - thickness / 2f, bottomLeftAngle.z);
+            vertices[1] = new Vector3(topRightAngle.x + thickness / 2f, bottomLeftAngle.y - thickness / 2f, topRightAngle.z);
+            vertices[2] = new Vector3(bottomLeftAngle.x - thickness / 2f, topRightAngle.y + thickness / 2f, bottomLeftAngle.z);
+            vertices[3] = new Vector3(topRightAngle.x + thickness / 2f, topRightAngle.y + thickness / 2f, topRightAngle.z);
+            
+            for (int i = 4; i < 8; i++)
+            {
+                vertices[i] = vertices[i - 4];
+                
+                vertices[i-4].z += thickness / 2f;
+                vertices[i].z -= thickness / 2f;
+                
+            }
+        }
+        else if (faceDirection == WallFace.Right || faceDirection == WallFace.Left)
         {
-            case WallFace.Front:
-            case WallFace.Back:
-                outNormals = -this.transform.forward;
-                inNormals = this.transform.forward;
-                break;
-            case WallFace.Right:
-            case WallFace.Left:
-                outNormals = this.transform.right;
-                inNormals = -this.transform.right;
-                break;
-            case WallFace.Top:
-            case WallFace.Down:
-                outNormals = -this.transform.up;
-                inNormals = this.transform.up;
-                break;
+            vertices[4] = new Vector3(bottomLeftAngle.x - thickness / 2f, bottomLeftAngle.y - thickness / 2f, bottomLeftAngle.z - thickness / 2f);
+            vertices[5] = new Vector3(bottomLeftAngle.x + thickness / 2f, bottomLeftAngle.y - thickness / 2f, bottomLeftAngle.z - thickness / 2f);
+            vertices[6] = new Vector3(bottomLeftAngle.x - thickness / 2f, topRightAngle.y + thickness / 2f, bottomLeftAngle.z - thickness / 2f);
+            vertices[7] = new Vector3(bottomLeftAngle.x + thickness / 2f, topRightAngle.y + thickness / 2f, bottomLeftAngle.z - thickness / 2f);
+
+            for (int i = 0; i < 4; i++)
+            {
+                vertices[i] = vertices[i + 4];
+                vertices[i].z = topRightAngle.z + thickness / 2f;
+            }
+        }
+        else if (faceDirection == WallFace.Top || faceDirection == WallFace.Down)
+        {
+
+            vertices[4] = new Vector3(bottomLeftAngle.x - thickness / 2f, bottomLeftAngle.y - thickness/2f, bottomLeftAngle.z - thickness / 2f);
+            vertices[5] = new Vector3(topRightAngle.x + thickness / 2f, bottomLeftAngle.y - thickness/2f, bottomLeftAngle.z - thickness / 2f);
+            vertices[6] = new Vector3(bottomLeftAngle.x - thickness / 2f, bottomLeftAngle.y + thickness/2f, bottomLeftAngle.z - thickness / 2f);
+            vertices[7] = new Vector3(topRightAngle.x + thickness / 2f, bottomLeftAngle.y + thickness/2f, bottomLeftAngle.z - thickness / 2f);
+
+            for (int i = 0; i < 4; i++)
+            {
+                vertices[i] = vertices[i + 4];
+                vertices[i].z = topRightAngle.z + thickness / 2f;
+            }
         }
 
-        normals[0] = outNormals;
-        normals[1] = outNormals;
-        normals[2] = outNormals;
-        normals[3] = outNormals;
+        vertices[8] = vertices[4];
+        vertices[9] = vertices[0];
+        vertices[10] = vertices[6];
+        vertices[11] = vertices[2];
 
-        normals[4] = inNormals;
-        normals[5] = inNormals;
-        normals[6] = inNormals;
-        normals[7] = inNormals;
+        vertices[12] = vertices[1];
+        vertices[13] = vertices[5];
+        vertices[14] = vertices[3];
+        vertices[15] = vertices[7];
 
-        uvs[0] = new Vector2(0f, 0f);
-        uvs[1] = new Vector2(0f, 1f);
-        uvs[2] = new Vector2(1f, 0f);
-        uvs[3] = new Vector2(1f, 1f);
+        vertices[16] = vertices[0];
+        vertices[17] = vertices[4];
+        vertices[18] = vertices[1];
+        vertices[19] = vertices[5];
 
-        uvs[4] = new Vector2(0f, 0f);
-        uvs[5] = new Vector2(0f, 1f);
-        uvs[6] = new Vector2(1f, 0f);
-        uvs[7] = new Vector2(1f, 1f);
+        vertices[20] = vertices[6];
+        vertices[21] = vertices[2];
+        vertices[22] = vertices[7];
+        vertices[23] = vertices[3];
 
-        int[] triangles = new int[12] { 0, 1, 2, 1, 3, 2, 4, 6, 5, 5, 6, 7};
 
-        // Assign the data to the mesh
+
+        int[] triangles = new int[36] {
+            0, 1, 2,
+            1, 3, 2,
+            
+            5, 4, 7,
+            4, 6, 7,
+
+            8, 9, 10,
+            9, 11, 10,
+
+            12, 13, 14,
+            13, 15, 14,
+
+            16, 17, 18,
+            17, 19, 18,
+
+            20, 21, 22,
+            21, 23, 22
+        };
+
         mesh.vertices = vertices;
-        mesh.triangles = triangles;
         mesh.normals = normals;
         mesh.uv = uvs;
-
-        return mesh;
-    }
-
-
-    // Creates a two sided plane mesh.
-    private Mesh CreateMesh(Vector3 bottomLeftAngle, Vector3 topRightAngle, int f)
-    {
-        Mesh mesh = new Mesh();
-
-        Vector3[] normals = new Vector3[8];
-        normals[0] = Vector3.up;
-        normals[1] = Vector3.up;
-        normals[2] = Vector3.up;
-        normals[3] = Vector3.up;
-
-        normals[4] = Vector3.down;
-        normals[5] = Vector3.down;
-        normals[6] = Vector3.down;
-        normals[7] = Vector3.down;
-
-        Vector3[] vertices = new Vector3[8];
-        if (!Mathf.Approximately(bottomLeftAngle.x, topRightAngle.x))
-        {
-            vertices[0] = new Vector3(bottomLeftAngle.x, bottomLeftAngle.y, bottomLeftAngle.z);
-            vertices[1] = new Vector3(bottomLeftAngle.x, topRightAngle.y, topRightAngle.z);
-            vertices[2] = new Vector3(topRightAngle.x, bottomLeftAngle.y, bottomLeftAngle.z);
-            vertices[3] = new Vector3(topRightAngle.x, topRightAngle.y, topRightAngle.z);
-
-            vertices[4] = new Vector3(bottomLeftAngle.x, bottomLeftAngle.y, bottomLeftAngle.z);
-            vertices[5] = new Vector3(bottomLeftAngle.x, topRightAngle.y, topRightAngle.z);
-            vertices[6] = new Vector3(topRightAngle.x, bottomLeftAngle.y, bottomLeftAngle.z);
-            vertices[7] = new Vector3(topRightAngle.x, topRightAngle.y, topRightAngle.z);
-        }
-        else if (!Mathf.Approximately(bottomLeftAngle.y, topRightAngle.y))
-        {
-
-            vertices[0] = new Vector3(topRightAngle.x, bottomLeftAngle.y, topRightAngle.z);
-            vertices[1] = new Vector3(bottomLeftAngle.x, topRightAngle.y, topRightAngle.z);
-            vertices[2] = new Vector3(bottomLeftAngle.x, bottomLeftAngle.y, bottomLeftAngle.z);
-            vertices[3] = new Vector3(bottomLeftAngle.x, topRightAngle.y, bottomLeftAngle.z);
-
-
-            vertices[4] = new Vector3(topRightAngle.x, bottomLeftAngle.y, topRightAngle.z);
-            vertices[5] = new Vector3(bottomLeftAngle.x, topRightAngle.y, topRightAngle.z);
-            vertices[6] = new Vector3(bottomLeftAngle.x, bottomLeftAngle.y, bottomLeftAngle.z);
-            vertices[7] = new Vector3(bottomLeftAngle.x, topRightAngle.y, bottomLeftAngle.z);
-        }
-
-        if (Mathf.Approximately(bottomLeftAngle.x, topRightAngle.x))
-        {
-            normals[0] = this.transform.right;
-            normals[1] = this.transform.right;
-            normals[2] = this.transform.right;
-            normals[3] = this.transform.right;
-
-            normals[4] = -this.transform.right;
-            normals[5] = -this.transform.right;
-            normals[6] = -this.transform.right;
-            normals[7] = -this.transform.right;
-        }
-        if (Mathf.Approximately(bottomLeftAngle.z, topRightAngle.z))
-        {
-            normals[0] = this.transform.forward;
-            normals[1] = this.transform.forward;
-            normals[2] = this.transform.forward;
-            normals[3] = this.transform.forward;
-
-            normals[4] = -this.transform.forward;
-            normals[5] = -this.transform.forward;
-            normals[6] = -this.transform.forward;
-            normals[7] = -this.transform.forward;
-        }
-
-        // Define triangles
-        int[] triangles = new int[12] { 0, 1, 2, 2, 1, 3, 6, 5, 4, 7, 5, 6};
-
-
-        // Define UVs
-        Vector2[] uvs = new Vector2[8];
-        uvs[0] = new Vector2(0f, 0f);
-        uvs[1] = new Vector2(0f, 1f);
-        uvs[2] = new Vector2(1f, 0f);
-        uvs[3] = new Vector2(1f, 1f);
-
-        uvs[4] = new Vector2(0f, 0f);
-        uvs[5] = new Vector2(0f, 1f);
-        uvs[6] = new Vector2(1f, 0f);
-        uvs[7] = new Vector2(1f, 1f);
-
-        // Assign the data to the mesh
-        mesh.vertices = vertices;
         mesh.triangles = triangles;
-        mesh.normals = normals;
-        mesh.uv = uvs;
 
         return mesh;
     }
@@ -567,7 +501,7 @@ public class Room : MonoBehaviour
         else return Color.white;
     }
 
-    private Vector3[] ComputeCorners(CorridorLink link, float corridorWidth)
+    private Vector3[] ComputeCorners(CorridorLink link)
     {
 
         // Corridor corners to compute meshes and intersections, BottomLeft (BL) and TopRight (TR) corners are computed based on the link direction
@@ -579,8 +513,8 @@ public class Room : MonoBehaviour
         Vector3 corridorTopRight = link.EndPoint - this.transform.position;
 
 
-        corridorBottomLeft -= link.perpendicular * corridorWidth / 2f;
-        corridorTopRight += link.perpendicular * corridorWidth / 2f;
+        corridorBottomLeft -= link.perpendicular * CorridorWidth / 2f;
+        corridorTopRight += link.perpendicular * CorridorWidth / 2f;
 
         // Offset the corridor start and/or end by the room size to avoid overlaps. 
         float roomSide = link.IsHorizontal() ? RoomWidth / 2f : RoomHeight / 2f;
@@ -590,23 +524,23 @@ public class Room : MonoBehaviour
             corridorBottomLeft += link.direction * roomSide;
         // Link is starting from a corridor, we offset by half corridor width
         else
-            corridorBottomLeft += link.direction * corridorWidth / 2f;
+            corridorBottomLeft += link.direction * CorridorWidth / 2f;
 
         // Link is ending in a room, we offset by the ending room size
         if (link.ConnectedRoom != null)
             corridorTopRight -= link.direction * (link.IsHorizontal() ? link.ConnectedRoom.RoomWidth / 2f : link.ConnectedRoom.RoomHeight / 2f);
         // Link is ending in a corridor, we offset by half corridor width
         else
-            corridorTopRight += link.direction * corridorWidth / 2f;
+            corridorTopRight += link.direction * CorridorWidth / 2f;
 
         return new Vector3[2] { corridorBottomLeft, corridorTopRight };
     }
 
-    public void CreateCorridors(float corridorWidth)
+    public void CreateCorridors()
     {
         foreach (var link in ExitCorridors)
         {
-            Vector3[] corners = ComputeCorners(link, corridorWidth);
+            Vector3[] corners = ComputeCorners(link);
             Vector3 corridorBottomLeft = corners[0];
             Vector3 corridorTopRight = corners[1];
 
@@ -616,7 +550,8 @@ public class Room : MonoBehaviour
 
         foreach (var link in ExitCorridors)
         {
-            if (link.PreviousLink == null && link.ConnectedRoom != null && link.NextLinks.Count == 0)
+
+            if (link.PreviousLink == null && link.NextLinks.Count == 0)
             {
 
 
@@ -641,14 +576,25 @@ public class Room : MonoBehaviour
                 corridorBottomLeft -= middlePoint;
                 corridorTopRight -= middlePoint;
 
+
                 link.BottomLeftCorner = corridorBottomLeft;
                 link.TopRightCorner = corridorTopRight;
 
-                link.CorridorObject = new GameObject("Door space");
+                link.CorridorObject = new GameObject("Corridor");
                 link.CorridorObject.transform.position = this.transform.position + middlePoint;
                 link.CorridorObject.transform.parent = this.transform;
-                link.CorridorObject.tag = "DoorSpace";
-                
+
+                //GameObject door = new GameObject("ExitDoor");
+                //door.tag = "DoorSpace";
+
+
+                GameObject door = CreateCorridorGameObject(corridorBottomLeft, corridorTopRight + Vector3.up * CorridorHeight, link.IsHorizontal() ? WallFace.Right : WallFace.Front);
+                door.transform.parent = this.transform;
+                door.transform.position = this.transform.position + middlePoint + Vector3.up * CorridorHeight / 2f;
+                door.name = "ExitDoor";
+                ExitDoors.Add(door);
+
+                link.ConnectedRoom.EntryDoor = door;
             }
         }
 
@@ -659,9 +605,23 @@ public class Room : MonoBehaviour
 
             if (link.CorridorObject != null) continue;
 
+            GameObject corridorFloor;
+            GameObject corridorCeiling;
+
+
             // Corridor floor and ceiling game objects
-            GameObject corridorFloor = CreateCorridorGameObject(corridorBottomLeft, corridorTopRight, WallFace.Down);
-            GameObject corridorCeiling = CreateCorridorGameObject(corridorBottomLeft + Vector3.up * corridorHeight, corridorTopRight + Vector3.up * corridorHeight, WallFace.Top);
+            if (link.IsHorizontal())
+            {
+                corridorFloor = CreateCorridorGameObject(corridorBottomLeft - transform.forward * CorridorWidth, corridorTopRight + transform.forward * CorridorWidth, WallFace.Down);
+                corridorCeiling = CreateCorridorGameObject(corridorBottomLeft + new Vector3(0, CorridorHeight, -CorridorWidth), corridorTopRight + new Vector3(0, CorridorHeight, CorridorWidth), WallFace.Top);
+
+            }
+            else
+            {
+                corridorFloor = CreateCorridorGameObject(corridorBottomLeft, corridorTopRight, WallFace.Down);
+                corridorCeiling = CreateCorridorGameObject(corridorBottomLeft + Vector3.up * CorridorHeight, corridorTopRight + Vector3.up * CorridorHeight, WallFace.Top);
+            }
+            
             corridorCeiling.transform.parent = corridorFloor.transform;
             corridorCeiling.name = "CorridorCeiling";
 
@@ -681,8 +641,8 @@ public class Room : MonoBehaviour
             }
 
             // Used to compute side and front walls
-            Vector3 upperTopLeftCorner = new Vector3(corridorBottomLeft.x, corridorHeight, corridorTopRight.z);
-            Vector3 upperBottomRightCorner = new Vector3(corridorTopRight.x, corridorHeight, corridorBottomLeft.z); ;
+            Vector3 upperTopLeftCorner = new Vector3(corridorBottomLeft.x, CorridorHeight, corridorTopRight.z);
+            Vector3 upperBottomRightCorner = new Vector3(corridorTopRight.x, CorridorHeight, corridorBottomLeft.z); ;
 
             // If the corridor has no next links then we can create the side walls immediately, since we don't have to account for any intersections between corridors.
             // We don't care if this corridor ends in a room since it won't overlap due to the room offset we computed earlier and the entrances / exits for the room will be created later.
@@ -694,15 +654,15 @@ public class Room : MonoBehaviour
                 // Check is used to compute meshes with the right normals and orientations
                 if (link.IsHorizontal())
                 {
-                    corridorLeftWall = CreateCorridorGameObject(upperTopLeftCorner, corridorTopRight, WallFace.Front);
+                    corridorLeftWall = CreateCorridorGameObject(upperTopLeftCorner + Vector3.down * CorridorHeight, corridorTopRight + Vector3.up * CorridorHeight, WallFace.Front);
                                         
-                    corridorRightWall = CreateCorridorGameObject(upperBottomRightCorner + Vector3.down * corridorHeight, corridorBottomLeft + Vector3.up * corridorHeight, WallFace.Back);
+                    corridorRightWall = CreateCorridorGameObject(corridorBottomLeft, upperBottomRightCorner, WallFace.Back);
                 }
                 else
                 {
                     
                     corridorLeftWall = CreateCorridorGameObject(corridorBottomLeft, upperTopLeftCorner, link.direction.z > 0 ? WallFace.Left : WallFace.Right);
-                    corridorRightWall = CreateCorridorGameObject(upperBottomRightCorner, corridorTopRight, link.direction.z > 0 ? WallFace.Right : WallFace.Left);
+                    corridorRightWall = CreateCorridorGameObject(corridorTopRight, upperBottomRightCorner, link.direction.z > 0 ? WallFace.Right : WallFace.Left);
                     
                 }
 
@@ -728,17 +688,17 @@ public class Room : MonoBehaviour
 
                 if (link.IsHorizontal())
                 {
-                    corridorFrontWall = CreateCorridorGameObject(upperBottomRightCorner + Vector3.down * corridorHeight, corridorTopRight + Vector3.up * corridorHeight, WallFace.Right);
+                    corridorFrontWall = CreateCorridorGameObject(corridorTopRight, upperBottomRightCorner, WallFace.Right);
                 }
                 else
                 {
                     if (link.sign > 0)
                     {
-                        corridorFrontWall = CreateCorridorGameObject(upperTopLeftCorner, corridorTopRight, WallFace.Front);
+                        corridorFrontWall = CreateCorridorGameObject(upperTopLeftCorner + Vector3.down * CorridorHeight, corridorTopRight + Vector3.up * CorridorHeight, WallFace.Front);
                     }
                     else
                     {
-                        corridorFrontWall = CreateCorridorGameObject(upperTopLeftCorner + Vector3.down * corridorHeight, corridorTopRight + Vector3.up * corridorHeight, WallFace.Back);
+                        corridorFrontWall = CreateCorridorGameObject(corridorTopRight, upperTopLeftCorner, WallFace.Back);
                     }
                 }
                 corridorFrontWall.name = "FrontWall";
@@ -763,52 +723,98 @@ public class Room : MonoBehaviour
         {
             if (corLink.NextLinks.Count > 0)
             {
-                CreateHoles(corLink, corridorWidth);
+                CreateHoles(corLink);
             }
+            if (corLink.PreviousLink == null && corLink.NextLinks.Count > 0)
+            {
+                //Vector3 doorPosition = new Vector3((corLink.BottomLeftCorner.x + corLink.TopRightCorner.x) / 2f, this.transform.position.y, corLink.BottomLeftCorner.z);
+
+                if (corLink.IsHorizontal())
+                {
+                    GameObject door = CreateCorridorGameObject(new Vector3(corLink.TopRightCorner.x, 0, corLink.BottomLeftCorner.z), corLink.TopRightCorner + Vector3.up * CorridorHeight, WallFace.Right);
+                    door.name = "ExitDoor";
+                    Vector3 pos = corLink.CorridorObject.transform.position;
+                    pos.x += corLink.BottomLeftCorner.x;
+                    pos.y += CorridorHeight / 2f;
+                    door.transform.position = pos;
+                    door.transform.parent = this.transform;
+
+                    ExitDoors.Add(door);
+                }
+            }
+        }
+
+        foreach (var corLink in EntranceCorridors)
+        {
+            if (this.EntryDoor != null) continue;
+
+            GameObject door = CreateCorridorGameObject(new Vector3(corLink.TopRightCorner.x, 0, corLink.BottomLeftCorner.z), corLink.TopRightCorner + Vector3.up * CorridorHeight, WallFace.Right);
+            door.name = "EntryDoor";
+            Vector3 pos = corLink.CorridorObject.transform.position;
+            pos.y += CorridorHeight / 2f;
+            pos.x += corLink.TopRightCorner.x;
+            door.transform.position = pos;
+            door.transform.parent = corLink.ConnectedRoom.transform;
+
+            corLink.ConnectedRoom.EntryDoor = door;
         }
 
         // Once all the corridors are created we can create the room walls and entrances
         AddRoomWalls();
-        m_Mesh = CreateMesh(this.RoomBottomLeft, this.RoomTopRight, WallFace.Down);
+        m_Mesh = CreateMesh(this.RoomBottomLeft, this.RoomTopRight, WallFace.Down, Thickness);
         m_MeshFilter.mesh = m_Mesh;
 
-        CreateCorridorGameObject(this.RoomBottomLeft + Vector3.up * corridorHeight, this.RoomTopRight + Vector3.up * corridorHeight, WallFace.Top);
+        CreateCorridorGameObject(this.RoomBottomLeft + Vector3.up * CorridorHeight, this.RoomTopRight + Vector3.up * CorridorHeight, WallFace.Top);
     }
 
-    private static bool done = false;
 
     /// <summary>
     /// Compute the holes needed in the corridor by splitting the walls in segments to be placed before and after the next corridor
     /// </summary>
     /// <param name="corridor">Current corridor to create holes for</param>
-    /// <param name="corridorWidth">Width of the corridor</param>
+    /// <param name="CorridorWidth">Width of the corridor</param>
     /// <returns></returns>
-    private List<GameObject> CreateHoles(CorridorLink corridor, float corridorWidth)
+    private List<GameObject> CreateHoles(CorridorLink corridor)
     {
        
         Vector3 leftReferencePoint = corridor.BottomLeftCorner;
-        Vector3 rightReferencePoint = corridor.BottomLeftCorner + corridor.perpendicular * corridorWidth;
+        Vector3 rightReferencePoint = corridor.BottomLeftCorner + corridor.perpendicular * CorridorWidth;
 
         // Compute intersection points between corridors. Intersection can only occur on the right side or left side of the corridor
-        var LeftHolesCoords = GetCorridorIntersectionPoints(corridor, -corridor.perpendicular, corridorWidth);
-        var RightHolesCoords = GetCorridorIntersectionPoints(corridor, corridor.perpendicular, corridorWidth);
+        var LeftHolesCoords = GetCorridorIntersectionPoints(corridor, -corridor.perpendicular);
+        var RightHolesCoords = GetCorridorIntersectionPoints(corridor, corridor.perpendicular);
         LeftHolesCoords.Insert(0, leftReferencePoint);
         RightHolesCoords.Insert(0, rightReferencePoint);
 
-        Vector3 topLeft = corridor.TopRightCorner - corridor.perpendicular * corridorWidth;
+        Vector3 topLeft = corridor.TopRightCorner - corridor.perpendicular * CorridorWidth;
         LeftHolesCoords.Add(topLeft);
         RightHolesCoords.Add(corridor.TopRightCorner);
 
         List<GameObject> WallPieces = new List<GameObject>();
-        WallPieces.AddRange(CreateWallSegments(corridor, LeftHolesCoords, corridorWidth));
-        WallPieces.AddRange(CreateWallSegments(corridor, RightHolesCoords, corridorWidth));
+
+        WallFace leftFaces;
+        WallFace rightFaces;
+
+        if (corridor.IsHorizontal())
+        {
+            leftFaces = WallFace.Front;
+            rightFaces = WallFace.Back;
+        }
+        else
+        {
+            leftFaces = WallFace.Left;
+            rightFaces = WallFace.Right;
+        }
+
+        WallPieces.AddRange(CreateWallSegments(corridor, LeftHolesCoords, leftFaces));
+        WallPieces.AddRange(CreateWallSegments(corridor, RightHolesCoords, rightFaces));
 
 
         return WallPieces;
     }
 
 
-    private List<Vector3> GetCorridorIntersectionPoints(CorridorLink corridor, Vector3 direction, float corridorWidth)
+    private List<Vector3> GetCorridorIntersectionPoints(CorridorLink corridor, Vector3 direction)
     {
         List<Vector3> IntersectionList = new List<Vector3>();
 
@@ -831,7 +837,7 @@ public class Room : MonoBehaviour
             //      
             if (childCorridor.direction.normalized == direction.normalized)
             {
-                intersectionPoints[0] = childCorridor.CorridorObject.transform.TransformPoint(childCorridor.BottomLeftCorner + childCorridor.perpendicular * corridorWidth);
+                intersectionPoints[0] = childCorridor.CorridorObject.transform.TransformPoint(childCorridor.BottomLeftCorner + childCorridor.perpendicular * CorridorWidth);
                 intersectionPoints[1] = childCorridor.CorridorObject.transform.TransformPoint(childCorridor.BottomLeftCorner);
 
                 intersectionPoints[0] = corridor.CorridorObject.transform.InverseTransformPoint(intersectionPoints[0]);
@@ -877,7 +883,7 @@ public class Room : MonoBehaviour
     /// <param name="IntersectionPoints">Intersection points between this corridor and its children</param>
     /// <param name="corridorWidth">Current width of the corridors</param>
     /// <returns></returns>
-    private List<GameObject> CreateWallSegments(CorridorLink corridor, List<Vector3> IntersectionPoints, float corridorWidth)
+    private List<GameObject> CreateWallSegments(CorridorLink corridor, List<Vector3> IntersectionPoints, WallFace face)
     {
 
 
@@ -896,25 +902,31 @@ public class Room : MonoBehaviour
         // There are always at least two points in the list: The reference point and the corresponding top corner
         while (IntersectionPoints.Count >= 2)
         {
-            IntersectionPoints.OrderBy(c => Vector3.Distance(referencePoint, c));
+            IntersectionPoints.OrderBy(c => -Vector3.Distance(referencePoint, c));
 
 
-            Vector3 firstPoint = IntersectionPoints[0];
-            Vector3 secondPoint = IntersectionPoints[1];
+            Vector3 firstPoint = IntersectionPoints[1];
+            Vector3 secondPoint = IntersectionPoints[0];
 
             IntersectionPoints.Remove(firstPoint);
             IntersectionPoints.Remove(secondPoint);
 
-            secondPoint += Vector3.up * corridorHeight;
+            if (corridor.sign > 0)
+            {
+                (firstPoint, secondPoint) = (secondPoint, firstPoint);
+            }
+
+            secondPoint += Vector3.up * CorridorHeight;
 
 
-            GameObject wallPiece = CreateCorridorGameObject(firstPoint, secondPoint);
+
+            GameObject wallPiece = CreateCorridorGameObject(firstPoint, secondPoint, face);
             WallPieces.Add(wallPiece);
 
             Vector3 oldWLocal = wallPiece.transform.localPosition;
             wallPiece.transform.parent = corridor.CorridorObject.transform;
             wallPiece.transform.localPosition = oldWLocal;
-            wallPiece.GetComponent<MeshRenderer>().material.color = Color.blue;
+            //wallPiece.GetComponent<MeshRenderer>().material.color = Color.blue;
 
             lastPoint = secondPoint;
         }
@@ -922,7 +934,7 @@ public class Room : MonoBehaviour
         return WallPieces;
     }
 
-    private GameObject CreateCorridorGameObject(Vector3 bottomLeft, Vector3 topRight, WallFace face = WallFace.Front)
+    private GameObject CreateCorridorGameObject(Vector3 bottomLeft, Vector3 topRight, WallFace face = WallFace.Front, float thickness = 0.1f)
     {
         Vector3 middlePoint = (bottomLeft + topRight) / 2f;
         bottomLeft -= middlePoint;
@@ -936,9 +948,9 @@ public class Room : MonoBehaviour
         corridor.AddComponent<MeshRenderer>();
         corridor.GetComponent<MeshRenderer>().material.color = Color.gray;
 
+        
 
-
-        corridor.GetComponent<MeshFilter>().mesh = CreateMesh(bottomLeft, topRight, face);
+        corridor.GetComponent<MeshFilter>().mesh = CreateMesh(bottomLeft, topRight, face, Thickness);
 
         Vector3 colliderSize = Vector3.zero;
         colliderSize.x = Mathf.Max(MathF.Abs(topRight.x - bottomLeft.x), 0.1f);

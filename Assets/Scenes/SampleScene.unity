@@ -666,9 +666,12 @@ MonoBehaviour:
   roomPrefab: {fileID: 4407709083458829419, guid: 9279dd30667203642b463a3ab0340fbb,
     type: 3}
   GridSize: {x: 150, y: 150}
-  CellSize: 5
+  CellSize: 12
   NumberOfRooms: 50
   GrammarGraph: {fileID: 11400000, guid: e08eb8c94bd43cc408ae4451bccd0c2c, type: 2}
+  CorridorWidth: 2
+  RoomHeight: 3
+  WallThickness: 0.1
 --- !u!4 &941400338
 Transform:
   m_ObjectHideFlags: 0

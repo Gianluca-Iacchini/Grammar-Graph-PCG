@@ -46,6 +46,9 @@ namespace PCG
 
         private List<Room> RoomList;
 
+        public float CorridorWidth = 0.5f;
+        public float RoomHeight = 3f;
+        public float WallThickness = 0.1f;
 
         private bool m_ShowKeyLines = false;
         private bool m_ShowNodeLines = true;
@@ -178,7 +181,7 @@ namespace PCG
             }
 
             foreach (Room r in RoomList)
-                r.CreateCorridors(0.5f);
+                r.CreateCorridors();
         }
 
         private void InitializeGrids()
@@ -331,6 +334,10 @@ namespace PCG
             r.Cell = CellCoords;
             ChangeSize(r);
             r.transform.parent = this.transform;
+
+            r.CorridorWidth = CorridorWidth;
+            r.CorridorHeight = RoomHeight;
+            r.Thickness = WallThickness;
 
             return r;
         }
