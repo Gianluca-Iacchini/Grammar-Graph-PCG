@@ -45,9 +45,6 @@ namespace PCG
 
         private Vector2Int GridSize = new Vector2Int(15, 15);
 
-        private bool m_ShowKeyLines = false;
-        private bool m_ShowNodeLines = true;
-
         // Start is called before the first frame update
 
         bool[,] GridOccupancy;
@@ -67,6 +64,8 @@ namespace PCG
             InitializeGrids();
         }
 
+        public Transform GeneratingText;
+
         // Update is called once per frame
         void Update()
         {
@@ -74,31 +73,23 @@ namespace PCG
             {
                 if (!isGenerating)
                 {
+                    GeneratingText.gameObject.SetActive(true);
                     isGenerating = true;
                     StartCoroutine(roomGeneratorRoutine());
-                    m_ShowNodeLines = true;
-                    m_ShowKeyLines = false;
-                }
-            }
-            if (Input.GetKeyDown(KeyCode.K))
-            {
-                m_ShowKeyLines = !m_ShowKeyLines;
-                foreach (var r in RoomList)
-                {
-                    r.ToggleKeyLines(m_ShowKeyLines);
+                    if (PlayerClone)
+                        PlayerClone.GetComponent<BasicFPSControl>().Reset();
                 }
             }
 
-            if (Input.GetKeyDown(KeyCode.M))
+            if (Input.GetKeyDown(KeyCode.C))
             {
-                m_ShowNodeLines = !m_ShowNodeLines;
-                foreach (var r in RoomList)
+                if (RoomList.Count > 0)
                 {
-                    r.ToggleNodeLines(m_ShowNodeLines);
+                    RoomList.ForEach(r => r.ToggleRoomColor());
                 }
             }
 
-            if (Input.GetKeyDown(KeyCode.P))
+            if (Input.GetKeyDown(KeyCode.P) && RoomList.Count > 0)
             {
                 if (!isPlaying)
                 {
@@ -125,6 +116,7 @@ namespace PCG
 
         private IEnumerator roomGeneratorRoutine()
         {
+            yield return new WaitForSeconds(0.1f);
 
             DeleteAllRooms();
             InitializeGrids();
@@ -142,9 +134,10 @@ namespace PCG
                 {
                     Debug.LogError("Could not generate valid graph");
                     isGenerating = false;
+                    GeneratingText.gameObject.SetActive(false); 
                     yield break;
                 }
-
+                GeneratingText.gameObject.SetActive(false);
                 yield return null;
             }
 
@@ -155,13 +148,14 @@ namespace PCG
             ConnectRooms(m_Graph);
             isGenerating = false;
 
-            float minX = RoomList.Min(x => x.transform.position.x);
-            float maxX = RoomList.Max(x => x.transform.position.x);
+            Room startRoom = RoomList.First(x => x.RoomNode.NodeSymbol.Name == "start");
 
-            float minZ = RoomList.Min(x => x.transform.position.z); 
-            float maxZ = RoomList.Max(x => x.transform.position.z);
+            if (startRoom != null)
+            {
+                Camera.main.transform.position = new Vector3(startRoom.transform.position.x, Camera.main.transform.position.y, startRoom.transform.position.z);
+            }
 
-            Camera.main.transform.position = new Vector3((minX + maxX) / 2, Camera.main.transform.position.y ,(minZ + maxZ) / 2);
+            GeneratingText.gameObject.SetActive(false);
         }
 
 
@@ -190,13 +184,13 @@ namespace PCG
 
                         r.AddConnection(keyNode.GetComponent<Room>(), e.EdgeSymbol);
 
-                        continue;
                     }
-
-                    var toNode = RoomList.Find(x => x.RoomNode == e.EndNode);
-                    r.AddConnection(toNode.GetComponent<Room>(), e.EdgeSymbol);
+                    else
+                    {
+                        var toNode = RoomList.Find(x => x.RoomNode == e.EndNode);
+                        r.AddConnection(toNode, e.EdgeSymbol);
+                    }
                 }
-                r.ToggleKeyLines(false);
             }
 
             foreach (Room r in RoomList)
@@ -208,7 +202,7 @@ namespace PCG
 
         private void InitializeGrids()
         {
-            GridSize = new Vector2Int(NumberOfRooms * 2, NumberOfRooms * 2);
+            GridSize = new Vector2Int(NumberOfRooms * 3, NumberOfRooms * 3);
             bool[,] roomGrid = new bool[GridSize.x, GridSize.y];
             
             for (int i = 0; i < GridSize.x; i++)
@@ -289,11 +283,11 @@ namespace PCG
                 {
                     GGEdge e = edges[i];
                     GGEdge nextChild = i + 1 < edges.Count ? edges[i + 1] : null;
+                    
+                    if (visitedNodes.Contains(e.EndNode)) continue;
 
                     // Only consider direct relationships, (i.e. discard key relationships)
                     if (e.EdgeSymbol.Type == GraphSymbolType.Edge) continue;
-                    
-                    if (visitedNodes.Contains(e.EndNode)) continue;
 
                     // Get number of rooms connected to the current child and the next child
                     int nChildren = graph.GetEdgesFromNode(e.EndNode).Count(e => e.EdgeSymbol.Type != GraphSymbolType.Edge);

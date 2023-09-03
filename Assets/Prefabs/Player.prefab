@@ -294,8 +294,8 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   moveSpeed: 12
+  sprintSpeed: 18
   sensitivity: 2
-  jumpForce: 5
   PlayerKeys: []
   KeySpriteContainer: {fileID: 1330626939783846638}
 --- !u!143 &1120178621

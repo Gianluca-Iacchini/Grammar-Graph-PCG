@@ -5,7 +5,7 @@ using UnityEngine;
 
 public class Key : MonoBehaviour
 {
-    [NonSerialized]
+
     public string KeyGUID;
 
     public float floatHeight = 1.0f; // The maximum height the object will float above its initial position.

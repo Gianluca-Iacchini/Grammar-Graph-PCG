@@ -9,8 +9,8 @@ public class BasicFPSControl : MonoBehaviour
     // Start is called before the first frame update
 
     public float moveSpeed = 5.0f;
+    public float sprintSpeed = 10.0f;
     public float sensitivity = 2.0f;
-    public float jumpForce = 50.0f;
 
     private Camera playerCamera;
     private CharacterController characterController;
@@ -22,6 +22,14 @@ public class BasicFPSControl : MonoBehaviour
 
     [SerializeField]
     private Transform KeySpriteContainer;
+
+    public void Reset()
+    {
+        for (int i = 0; i < KeySpriteContainer.childCount; i++)
+        {
+            Destroy(KeySpriteContainer.GetChild(0).gameObject);
+        }
+    }
 
     public void Activate()
     {
@@ -52,16 +60,10 @@ public class BasicFPSControl : MonoBehaviour
         // Player movement
         float horizontalInput = Input.GetAxis("Horizontal");
         float verticalInput = Input.GetAxis("Vertical");
-        Vector3 movement = transform.TransformDirection(new Vector3(horizontalInput, 0, verticalInput) * moveSpeed);
 
-        // Jumping
-        if (characterController.isGrounded)
-        {
-            if (Input.GetButtonDown("Jump"))
-            {
-                movement.y = jumpForce;
-            }
-        }
+        float moveSpeedMult = Input.GetKey(KeyCode.LeftShift) ? sprintSpeed : moveSpeed;
+
+        Vector3 movement = transform.TransformDirection(new Vector3(horizontalInput, 0, verticalInput) * moveSpeedMult);
 
         // Apply gravity
         movement.y -= 9.8f * Time.deltaTime;

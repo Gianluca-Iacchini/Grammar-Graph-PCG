@@ -23,6 +23,7 @@ public class Room : MonoBehaviour
         Right
     }
 
+    #region Corridor Link
     private class CorridorLink
     {
         public Vector3 StartPoint;
@@ -83,10 +84,9 @@ public class Room : MonoBehaviour
             return difference.magnitude + CorridorWidth;
         }
     }
+    #endregion Corridor Link
 
-    private GGNode _RoomNode = null;
-
-    public GGNode RoomNode { get { return _RoomNode; } set { _RoomNode = value; this.GetComponent<MeshRenderer>().material.color = SetColor(); } }
+    public GGNode RoomNode = null;
 
     [SerializeField]
     public LineRenderer lineRendererPrefab;
@@ -138,7 +138,9 @@ public class Room : MonoBehaviour
 
     [NonSerialized]
     public List<Door> ExitDoors = new();
-    
+
+    private GameObject RoomCeiling = null;
+    private bool isColored = false;
 
     public void Awake()
     {
@@ -184,32 +186,6 @@ public class Room : MonoBehaviour
         }
 
         AddLink(newLink);
-    }
-
-    public void ToggleNodeLines(bool toggle)
-    {
-        foreach (var l in nodeLines)
-        {
-            l.gameObject.SetActive(toggle);
-        }
-    }
-
-    public void ToggleKeyLines(bool toggle)
-    {
-        foreach (var l in keyLines)
-        {
-            l.gameObject.SetActive(toggle);
-        }
-    }
-
-    public void ShowLinks()
-    {
-        foreach (var link in ExitCorridors)
-        {
-            var lineRenderer = Instantiate(lineRendererPrefab, this.transform);
-            lineRenderer.SetPosition(0, link.StartPoint);
-            lineRenderer.SetPosition(1, link.EndPoint);
-        }
     }
 
     private void AddLink(CorridorLink link, CorridorLink parent = null)
@@ -535,6 +511,15 @@ public class Room : MonoBehaviour
         else return Color.white;
     }
 
+    public void ToggleRoomColor()
+    {
+        Color color = isColored ? Color.gray : SetColor();
+        isColored = !isColored;
+
+        this.GetComponent<MeshRenderer>().material.color = color;
+        RoomCeiling.GetComponent<MeshRenderer>().material.color = color;
+    }
+
     private Vector3[] ComputeCorners(CorridorLink link)
     {
 
@@ -679,6 +664,8 @@ public class Room : MonoBehaviour
                 corridorCeiling.GetComponent<MeshFilter>().mesh = mc;
             }
 
+            
+
             // Used to compute side and front walls
             Vector3 upperTopLeftCorner = new Vector3(corridorBottomLeft.x, CorridorHeight, corridorTopRight.z);
             Vector3 upperBottomRightCorner = new Vector3(corridorTopRight.x, CorridorHeight, corridorBottomLeft.z); ;
@@ -783,12 +770,16 @@ public class Room : MonoBehaviour
 
         // Once all the corridors are created we can create the room walls and entrances
         AddRoomWalls();
+
         m_Mesh = CreateMesh(this.RoomBottomLeft, this.RoomTopRight, WallFace.Down, Thickness);
         m_MeshFilter.mesh = m_Mesh;
+
+
         var boxColl = this.AddComponent<BoxCollider>();
         boxColl.size = new Vector3(RoomWidth, Thickness, RoomHeight);
 
-        CreateCorridorGameObject(this.RoomBottomLeft + Vector3.up * CorridorHeight, this.RoomTopRight + Vector3.up * CorridorHeight, WallFace.Top);
+        RoomCeiling = CreateCorridorGameObject(this.RoomBottomLeft + Vector3.up * CorridorHeight, this.RoomTopRight + Vector3.up * CorridorHeight, WallFace.Top);
+
 
         Vector3[] lightCorners = new Vector3[4];
         lightCorners[0] = new Vector3(RoomWidth / 2f - Thickness, CorridorHeight - Thickness, 0f);
