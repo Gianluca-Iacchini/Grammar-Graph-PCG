@@ -20,7 +20,7 @@ namespace PCG
         
 
         [SerializeField]
-        private Room roomPrefab;
+        private Room roomPrefab;        
 
         [SerializeField]
         private float CellSize;
@@ -201,6 +201,9 @@ namespace PCG
 
             foreach (Room r in RoomList)
                 r.CreateCorridors();
+
+            foreach (Room r in RoomList)
+                r.SetupRoomState();
         }
 
         private void InitializeGrids()

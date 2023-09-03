@@ -1,3 +1,4 @@
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using Unity.VisualScripting;
@@ -16,6 +17,11 @@ public class BasicFPSControl : MonoBehaviour
     private float rotationX = 0;
 
     private bool isActive = false;
+
+    public List<string> PlayerKeys = new List<string>();
+
+    [SerializeField]
+    private Transform KeySpriteContainer;
 
     public void Activate()
     {
@@ -72,5 +78,50 @@ public class BasicFPSControl : MonoBehaviour
 
         // Apply movement
         characterController.Move(movement * Time.deltaTime);
+    }
+
+    private void OnTriggerEnter(Collider other)
+    {
+        if (other.gameObject.layer == 7)
+        {
+            Key key = other.gameObject.GetComponent<Key>();
+            if (key != null)
+            {
+                PlayerKeys.Add(key.KeyGUID);
+                AddKeySprite(key);
+            }
+            other.gameObject.SetActive(false);
+        }
+        else if (other.gameObject.layer == 6)
+        {
+            Lock _lock = other.gameObject.GetComponent<Lock>();
+            if (_lock != null)
+            {
+                bool unlocked = _lock.Unlock(PlayerKeys);
+                other.gameObject.SetActive(!unlocked);
+            }
+
+        }
+        else if (other.gameObject.layer == 8)
+        {
+            Task task = other.gameObject.GetComponent<Task>();
+            if (task != null)
+            {
+                task.CompleteTask();
+            }
+            other.gameObject.SetActive(false);
+        }
+    }
+
+    private void AddKeySprite(Key key)
+    {
+        GameObject image = new GameObject("Image");
+        image.transform.parent = KeySpriteContainer;
+        UnityEngine.UI.Image keyImage = image.AddComponent<UnityEngine.UI.Image>();
+        image.transform.localPosition = Vector3.zero;
+        image.transform.localScale = Vector3.one;
+        image.transform.localRotation = Quaternion.identity;
+
+        keyImage.color = key.KeyColor;
     }
 }

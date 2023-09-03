@@ -98,8 +98,20 @@ public class Room : MonoBehaviour
     public List<LineRenderer> nodeLines = new List<LineRenderer>();
     public List<LineRenderer> keyLines = new List<LineRenderer>();
 
+    [SerializeField]
+    private Key keyPrefab;
+
+    [SerializeField]
+    private Task taskPrefab;
+
+    [SerializeField]
+    private Lock lockPrefab;    
+    
+    [SerializeField]
+    private Treasure treasurePrefab;
+
     public Room ParentRoom = null;
-    public HashSet<Room> ChildRooms = new HashSet<Room>();
+    public HashSet<Room> LockRooms = new HashSet<Room>();
 
     MeshFilter m_MeshFilter = null;
     Mesh m_Mesh = null;
@@ -107,6 +119,9 @@ public class Room : MonoBehaviour
     public float CorridorWidth = 0.5f;
     public float CorridorHeight = 1.0f;
     public float Thickness = 0.1f;
+
+
+    public Lock lockInstance { get; private set; }
 
     //private Vector2 RoomSize = Vector2.zero;
     private Vector3 RoomBottomLeft = Vector3.zero;
@@ -122,22 +137,22 @@ public class Room : MonoBehaviour
 
 
     [NonSerialized]
-    public List<GameObject> ExitDoors = new();
-
-    [NonSerialized]
-    public GameObject EntryDoor = null;
+    public List<Door> ExitDoors = new();
     
 
     public void Awake()
     {
         m_MeshFilter = this.GetComponent<MeshFilter>();
+        lockInstance = Instantiate(lockPrefab, this.transform);
     }
 
     public void AddConnection(Room room, Symbol edgeSymbol)
     {
-        if (edgeSymbol.Type == GraphSymbolType.Edge) return;
-
-        ChildRooms.Add(room);
+        if (edgeSymbol.Type == GraphSymbolType.Edge)
+        {
+            LockRooms.Add(room);
+            return;
+        }
 
         CorridorLink newLink;
 
@@ -373,7 +388,26 @@ public class Room : MonoBehaviour
             var obj = CreateCorridorGameObject(firstPoint, secondPoint, face);
             Vector3 wPos = obj.transform.localPosition;
             obj.transform.parent = this.transform;
+
+            switch(face)
+            {
+                case WallFace.Left:
+                    wPos.x += Thickness / 2f;
+                    break;
+                case WallFace.Right:
+                    wPos.x -= Thickness / 2f;
+                    break;
+                case WallFace.Front:
+                    wPos.z -= Thickness / 2f;
+                    break;
+                case WallFace.Back:
+                    wPos.z += Thickness / 2f;
+                    break;
+            }
+
             obj.transform.localPosition = wPos;
+
+
         }
     }
 
@@ -397,10 +431,10 @@ public class Room : MonoBehaviour
 
         if (faceDirection == WallFace.Back || faceDirection == WallFace.Front)
         {
-            vertices[0] = new Vector3(bottomLeftAngle.x - thickness / 2f, bottomLeftAngle.y - thickness / 2f, bottomLeftAngle.z);
-            vertices[1] = new Vector3(topRightAngle.x + thickness / 2f, bottomLeftAngle.y - thickness / 2f, topRightAngle.z);
-            vertices[2] = new Vector3(bottomLeftAngle.x - thickness / 2f, topRightAngle.y + thickness / 2f, bottomLeftAngle.z);
-            vertices[3] = new Vector3(topRightAngle.x + thickness / 2f, topRightAngle.y + thickness / 2f, topRightAngle.z);
+            vertices[0] = new Vector3(bottomLeftAngle.x, bottomLeftAngle.y, bottomLeftAngle.z);
+            vertices[1] = new Vector3(topRightAngle.x, bottomLeftAngle.y, topRightAngle.z);
+            vertices[2] = new Vector3(bottomLeftAngle.x, topRightAngle.y, bottomLeftAngle.z);
+            vertices[3] = new Vector3(topRightAngle.x, topRightAngle.y, topRightAngle.z);
             
             for (int i = 4; i < 8; i++)
             {
@@ -413,29 +447,29 @@ public class Room : MonoBehaviour
         }
         else if (faceDirection == WallFace.Right || faceDirection == WallFace.Left)
         {
-            vertices[4] = new Vector3(bottomLeftAngle.x - thickness / 2f, bottomLeftAngle.y - thickness / 2f, bottomLeftAngle.z - thickness / 2f);
-            vertices[5] = new Vector3(bottomLeftAngle.x + thickness / 2f, bottomLeftAngle.y - thickness / 2f, bottomLeftAngle.z - thickness / 2f);
-            vertices[6] = new Vector3(bottomLeftAngle.x - thickness / 2f, topRightAngle.y + thickness / 2f, bottomLeftAngle.z - thickness / 2f);
-            vertices[7] = new Vector3(bottomLeftAngle.x + thickness / 2f, topRightAngle.y + thickness / 2f, bottomLeftAngle.z - thickness / 2f);
+            vertices[4] = new Vector3(bottomLeftAngle.x - thickness / 2f, bottomLeftAngle.y, bottomLeftAngle.z);
+            vertices[5] = new Vector3(bottomLeftAngle.x + thickness / 2f, bottomLeftAngle.y, bottomLeftAngle.z);
+            vertices[6] = new Vector3(bottomLeftAngle.x - thickness / 2f, topRightAngle.y, bottomLeftAngle.z);
+            vertices[7] = new Vector3(bottomLeftAngle.x + thickness / 2f, topRightAngle.y, bottomLeftAngle.z);
 
             for (int i = 0; i < 4; i++)
             {
                 vertices[i] = vertices[i + 4];
-                vertices[i].z = topRightAngle.z + thickness / 2f;
+                vertices[i].z = topRightAngle.z;
             }
         }
         else if (faceDirection == WallFace.Top || faceDirection == WallFace.Down)
         {
 
-            vertices[4] = new Vector3(bottomLeftAngle.x - thickness / 2f, bottomLeftAngle.y - thickness/2f, bottomLeftAngle.z - thickness / 2f);
-            vertices[5] = new Vector3(topRightAngle.x + thickness / 2f, bottomLeftAngle.y - thickness/2f, bottomLeftAngle.z - thickness / 2f);
-            vertices[6] = new Vector3(bottomLeftAngle.x - thickness / 2f, bottomLeftAngle.y + thickness/2f, bottomLeftAngle.z - thickness / 2f);
-            vertices[7] = new Vector3(topRightAngle.x + thickness / 2f, bottomLeftAngle.y + thickness/2f, bottomLeftAngle.z - thickness / 2f);
+            vertices[4] = new Vector3(bottomLeftAngle.x, bottomLeftAngle.y - thickness/2f, bottomLeftAngle.z );
+            vertices[5] = new Vector3(topRightAngle.x, bottomLeftAngle.y - thickness/2f, bottomLeftAngle.z);
+            vertices[6] = new Vector3(bottomLeftAngle.x, bottomLeftAngle.y + thickness/2f, bottomLeftAngle.z);
+            vertices[7] = new Vector3(topRightAngle.x, bottomLeftAngle.y + thickness/2f, bottomLeftAngle.z);
 
             for (int i = 0; i < 4; i++)
             {
                 vertices[i] = vertices[i + 4];
-                vertices[i].z = topRightAngle.z + thickness / 2f;
+                vertices[i].z = topRightAngle.z;
             }
         }
 
@@ -584,17 +618,22 @@ public class Room : MonoBehaviour
                 link.CorridorObject.transform.position = this.transform.position + middlePoint;
                 link.CorridorObject.transform.parent = this.transform;
 
-                //GameObject door = new GameObject("ExitDoor");
-                //door.tag = "DoorSpace";
+                GameObject doorGO;
+                if (link.sign < 0 || link.IsHorizontal())
+                {
+                    doorGO = CreateCorridorGameObject(corridorTopRight, corridorBottomLeft + Vector3.up * CorridorHeight, link.IsHorizontal() ? WallFace.Right : WallFace.Front);
+                }
+                else
+                {
+                    doorGO = CreateCorridorGameObject(corridorTopRight + Vector3.up * CorridorHeight, corridorBottomLeft, link.IsHorizontal() ? WallFace.Right : WallFace.Front);
 
-
-                GameObject door = CreateCorridorGameObject(corridorBottomLeft, corridorTopRight + Vector3.up * CorridorHeight, link.IsHorizontal() ? WallFace.Right : WallFace.Front);
-                door.transform.parent = this.transform;
-                door.transform.position = this.transform.position + middlePoint + Vector3.up * CorridorHeight / 2f;
-                door.name = "ExitDoor";
+                }
+                doorGO.transform.parent = this.transform;
+                doorGO.transform.position = this.transform.position + middlePoint + Vector3.up * CorridorHeight / 2f;
+                doorGO.name = "ExitDoor";
+                Door door = doorGO.AddComponent<Door>();
+                
                 ExitDoors.Add(door);
-
-                link.ConnectedRoom.EntryDoor = door;
             }
         }
 
@@ -729,32 +768,17 @@ public class Room : MonoBehaviour
             {
                 if (corLink.IsHorizontal())
                 {
-                    GameObject door = CreateCorridorGameObject(new Vector3(corLink.TopRightCorner.x, 0, corLink.BottomLeftCorner.z), corLink.TopRightCorner + Vector3.up * CorridorHeight, WallFace.Right);
-                    door.name = "ExitDoor";
+                    GameObject doorGO = CreateCorridorGameObject(new Vector3(corLink.TopRightCorner.x, CorridorHeight, corLink.BottomLeftCorner.z), corLink.TopRightCorner, WallFace.Right);
+                    doorGO.name = "ExitDoor";
                     Vector3 pos = corLink.CorridorObject.transform.position;
                     pos.x += corLink.BottomLeftCorner.x;
                     pos.y += CorridorHeight / 2f;
-                    door.transform.position = pos;
-                    door.transform.parent = this.transform;
-
+                    doorGO.transform.position = pos;
+                    doorGO.transform.parent = this.transform;
+                    Door door = doorGO.AddComponent<Door>();
                     ExitDoors.Add(door);
                 }
             }
-        }
-
-        foreach (var corLink in EntranceCorridors)
-        {
-            if (this.EntryDoor != null) continue;
-
-            GameObject door = CreateCorridorGameObject(new Vector3(corLink.TopRightCorner.x, 0, corLink.BottomLeftCorner.z), corLink.TopRightCorner + Vector3.up * CorridorHeight, WallFace.Right);
-            door.name = "EntryDoor";
-            Vector3 pos = corLink.CorridorObject.transform.position;
-            pos.y += CorridorHeight / 2f;
-            pos.x += corLink.TopRightCorner.x;
-            door.transform.position = pos;
-            door.transform.parent = corLink.ConnectedRoom.transform;
-
-            corLink.ConnectedRoom.EntryDoor = door;
         }
 
         // Once all the corridors are created we can create the room walls and entrances
@@ -765,6 +789,23 @@ public class Room : MonoBehaviour
         boxColl.size = new Vector3(RoomWidth, Thickness, RoomHeight);
 
         CreateCorridorGameObject(this.RoomBottomLeft + Vector3.up * CorridorHeight, this.RoomTopRight + Vector3.up * CorridorHeight, WallFace.Top);
+
+        Vector3[] lightCorners = new Vector3[4];
+        lightCorners[0] = new Vector3(RoomWidth / 2f - Thickness, CorridorHeight - Thickness, 0f);
+        lightCorners[1] = new Vector3(-RoomWidth / 2f + Thickness, CorridorHeight - Thickness, 0f);
+        lightCorners[2] = new Vector3(0, CorridorHeight - Thickness, RoomHeight / 2f);
+        lightCorners[3] = new Vector3(0, CorridorHeight - Thickness, -RoomHeight / 2f);
+        
+        for (int i = 0; i < 4; i++)
+        {
+            GameObject light = new GameObject("Light" + i);
+            Light l = light.AddComponent<Light>();
+            l.type = LightType.Point;
+            l.intensity = 3f;
+            l.range = 20f;
+            light.transform.parent = this.transform;
+            light.transform.position = this.transform.position + lightCorners[i];
+        }
     }
 
 
@@ -959,4 +1000,54 @@ public class Room : MonoBehaviour
 
         return corridor;
     }
+
+
+
+    public void SetupRoomState()
+    {
+        if (this.RoomNode.NodeSymbol.Name == "l")
+        {
+            lockInstance.SetPosition(this.transform.position + Vector3.up * CorridorHeight / 3f);
+            lockInstance.lockRoom = this;
+            return;
+        }
+
+        if (this.RoomNode.NodeSymbol.Name == "start")
+            OpenDoors();
+
+        else if (this.RoomNode.NodeSymbol.Name == "k")
+        {
+            Key key = Instantiate(keyPrefab, this.transform);
+            key.SetPosition(this.transform.position + Vector3.up * CorridorHeight / 3f);
+            key.KeyGUID = this.RoomNode.GUID;
+            key.SetColor();
+
+            foreach (var room in this.LockRooms)
+            {
+                room.lockInstance.AddKey(key);
+            }
+        }
+        else if (this.RoomNode.NodeSymbol.Name == "t")
+        {
+            Task task = Instantiate(taskPrefab, this.transform);
+            task.SetPosition(this.transform.position + Vector3.up * CorridorHeight / 3f);
+            task.room = this;
+        }
+        else if (this.RoomNode.NodeSymbol.Name == "b")
+        {
+            Treasure treasure = Instantiate(treasurePrefab, this.transform);
+            treasure.SetPosition(this.transform.position + Vector3.up * CorridorHeight / 3f);
+        }
+        Destroy(lockInstance.gameObject);
+    }
+
+    public void OpenDoors()
+    {
+        foreach (var door in ExitDoors)
+        {
+            door.Open();
+        }
+    }
+
+
 }
