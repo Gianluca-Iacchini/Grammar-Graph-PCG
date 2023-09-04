@@ -108,7 +108,7 @@ public class Room : MonoBehaviour
     private Lock lockPrefab;    
     
     [SerializeField]
-    private Treasure treasurePrefab;
+    private FloatingText floatingText;
 
     public Room ParentRoom = null;
     public HashSet<Room> LockRooms = new HashSet<Room>();
@@ -1004,7 +1004,13 @@ public class Room : MonoBehaviour
         }
 
         if (this.RoomNode.NodeSymbol.Name == "start")
+        {
+            FloatingText treasureText = Instantiate(floatingText, this.transform);
+            treasureText.SetText("Start Room");
+            treasureText.SetPosition(this.transform.position + Vector3.up * CorridorHeight / 3f);
             OpenDoors();
+        }
+
 
         else if (this.RoomNode.NodeSymbol.Name == "k")
         {
@@ -1026,8 +1032,15 @@ public class Room : MonoBehaviour
         }
         else if (this.RoomNode.NodeSymbol.Name == "b")
         {
-            Treasure treasure = Instantiate(treasurePrefab, this.transform);
-            treasure.SetPosition(this.transform.position + Vector3.up * CorridorHeight / 3f);
+            FloatingText treasureText = Instantiate(floatingText, this.transform);
+            treasureText.SetText("Treasure Room");
+            treasureText.SetPosition(this.transform.position + Vector3.up * CorridorHeight / 3f);
+        }
+        else if (this.RoomNode.NodeSymbol.Name == "goal")
+        {
+            FloatingText treasureText = Instantiate(floatingText, this.transform);
+            treasureText.SetText("Goal Room");
+            treasureText.SetPosition(this.transform.position + Vector3.up * CorridorHeight / 3f);
         }
         Destroy(lockInstance.gameObject);
     }

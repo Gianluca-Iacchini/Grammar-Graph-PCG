@@ -1,8 +1,9 @@
 using System.Collections;
 using System.Collections.Generic;
+using TMPro;
 using UnityEngine;
 
-public class Treasure : MonoBehaviour
+public class FloatingText : MonoBehaviour
 {
     public float floatHeight = 1.0f; // The maximum height the object will float above its initial position.
     public float floatSpeed = 1.0f; // The speed at which the object will float up and down.
@@ -32,5 +33,10 @@ public class Treasure : MonoBehaviour
 
         // Rotate the object around its local Y axis at 1 degree per second
         transform.Rotate(Vector3.up * Time.deltaTime * rotationSpeed);
+    }
+
+    public void SetText(string text)
+    {
+        this.GetComponentInChildren<TextMeshProUGUI>().text = text;
     }
 }

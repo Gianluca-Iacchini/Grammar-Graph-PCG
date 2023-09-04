@@ -247,7 +247,7 @@ GameObject:
   - component: {fileID: 5407724493958230936}
   - component: {fileID: 4344951571626060645}
   m_Layer: 0
-  m_Name: Treasure
+  m_Name: FloatingText
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0

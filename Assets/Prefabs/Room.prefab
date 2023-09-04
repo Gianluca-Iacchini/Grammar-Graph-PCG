@@ -65,7 +65,7 @@ MonoBehaviour:
     type: 3}
   lockPrefab: {fileID: -6540451833500242717, guid: 3c773b5e62c4bfd4bb6200f76fe2a546,
     type: 3}
-  treasurePrefab: {fileID: 4344951571626060645, guid: 3e2ef67c6f9cc9d45b4070c5bed7cf9a,
+  floatingText: {fileID: 4344951571626060645, guid: 3e2ef67c6f9cc9d45b4070c5bed7cf9a,
     type: 3}
   ParentRoom: {fileID: 0}
   CorridorWidth: 0.5
