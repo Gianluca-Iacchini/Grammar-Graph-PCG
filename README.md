@@ -7,4 +7,5 @@ This repository contains the implementation of a [Grammar Graph](https://en.wiki
 The file _"Report.pdf"_ contains details regarding the implementation of the project.   
 
 The project was made using Unity version 2022.3.11f1
+
 ---
